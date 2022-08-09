@@ -18,17 +18,18 @@ Note: Higher priority means it runs earlier
 |Configure Addressable Graphics Settings|-5.01K|Assigns the Risk of Rain 2 DeferredShading and DeferredReflectionCustom shaders in the Addressable Graphics settings and by proxy in the Project's Graphics Settings|Recommended
 |Ensure RoR2 Thunderstore Source|-125k|Ensures the creation of a thunderstore source that points to https://thunderstore.io|Recommended
 |Install BepInExPack|-135K|Installs the latest version of BepInExPack|Extremely Recommended
-|Install FixPluginTypesSerialization|-140K|Installs the latest version of FixPluginTypesSerialization|Highly Recommended
 |Install R2API|-145K|Installs the latest version of R2API|Optional but Recommended|
 |Install RoR2MultiplayerHLAPI|-155K|Installs the latest version of the RoR2MultiplayerHLAPI and prevents the game's com.unity.mulitplayerhlapi.runtime.dll from being imported|Extremely Recommended
 |Install RoR2EditorKit|-160K|Installs the latest version of RoR2EditorKit| Optional, but recommended|
-
-Note: FixPluginTypesSerialization will soon be added to the RoR2BepInExPack and as such it's import extension will be removed in a later update
 
 ## Planned Features
 An importer to automatically generate an MMHook for RoR2.dll
 
 ## Changelog
+
+### 1.2.0
+
+- FixPluginTypesSerialization is now in the BepInExPack by default, removed the option for installing the FixPluginTypesSerialization standalone
 
 ### 1.1.1
 
