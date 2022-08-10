@@ -12,7 +12,7 @@ namespace RiskOfThunder.RoR2Importer
 {
     public class MMHookGeneratorProcessor : AssemblyProcessor
     {
-        public override int Priority => 500;
+        public override int Priority => 400;
         public override string Name => $"MMHook Generator Processor";
 
         public override string Process(string assemblyPath)
@@ -30,7 +30,7 @@ namespace RiskOfThunder.RoR2Importer
             UObject hookGenExe = dataStorer.hookGenExecutable;
             if (hookGenExe == null)
             {
-                Debug.LogWarning($"Could not strip assembly {assemblyFileName}, as HookGen has not been located.");
+                Debug.LogWarning($"Could not generate hook assembly for {assemblyFileName}, as HookGen has not been located.");
                 return assemblyPath;
             }
 
@@ -45,10 +45,11 @@ namespace RiskOfThunder.RoR2Importer
 
             List<string> arguments = new List<string>
             {
+                hookGenPath,
                 assemblyPath
             };
 
-            List<string> log = new List<string> { $"Publicized {assemblyFileName} with the following arguments:" };
+            List<string> log = new List<string> { $"Generating hook assembly for {assemblyFileName} with the following arguments:" };
             log.AddRange(GenerateHooks(arguments, hookGenPath));
             Debug.Log(string.Join("\n", log));
 
