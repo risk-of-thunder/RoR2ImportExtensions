@@ -13,6 +13,7 @@ Note: Higher priority means it runs earlier
 |TextMeshPro Uninstaller|3.24M|Removes Unity TextMeshPro due to compatibility issues with the games modified TextMeshPro library and ensures that Unity.TextMeshPro.dll is copied from the games directory|Highly Recommended|
 |Unity GUI Uninstaller|3.23M|Removes Unity GUI due to compatibility issues with the game's modified TextMeshPro library and ensures that the Unity.UI.dll is copied from the games directory|Highly Recommended|
 |Assembly Publicizer|3.125M|Publicizes the listed assemblies with N-Strip, publicized assemblies retain their editor functionality and inspector look| Recommended if publicizing is needed|
+|MMHook Generator|3.12M|Creates MMHook assemblies for the listed assemblies, allowing for hooking ingame methods to run code injection|Extremel Recommended
 |RoR2 LegacyResourceAPI Patcher|2.75M|Patches the game's LegacyResourcesAPI to improve editor functionality and greatly reduce hangs/freezes|Extremely Recommended|
 |Set Deferred Shading|1.9995M|Ensures that the Graphics Tiers have their Rendering Path set to Deferred after importing Project settings|Highly Recommended
 |Configure Addressable Graphics Settings|-5.01K|Assigns the Risk of Rain 2 DeferredShading and DeferredReflectionCustom shaders in the Addressable Graphics settings and by proxy in the Project's Graphics Settings|Recommended
@@ -30,6 +31,7 @@ An importer to automatically generate an MMHook for RoR2.dll
 ### 1.2.0
 
 - FixPluginTypesSerialization is now in the BepInExPack by default, removed the option for installing the FixPluginTypesSerialization standalone
+- Added the MMHook Generator, used for automatically generating MonoMod hook assemblies.
 
 ### 1.1.1
 

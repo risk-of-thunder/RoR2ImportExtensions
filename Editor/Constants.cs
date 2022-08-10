@@ -33,12 +33,13 @@
                     return Path.Combine(tempFolder, "ThunderKit", "PublicizedAssemblies");
                 }
             }
-            public static string HookGenAssembliesFolder
+
+            public static string HookGenAssembliesPackageFolder
             {
                 get
                 {
-                    string tempFolder = Application.dataPath.Replace("Assets", "Temp");
-                    return Path.Combine(tempFolder, "ThunderKit", "HookingAssemblies");
+                    string packagesFolder = Application.dataPath.Replace("Assets", "Packages");
+                    return Path.Combine(packagesFolder, "mmhook-assemblies");
                 }
             }
         }

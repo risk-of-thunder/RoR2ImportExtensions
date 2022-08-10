@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using ThunderKit.Core.Config;
-using ThunderKit.Core.Data;
 using UnityEditor;
 using Debug = UnityEngine.Debug;
 using UObject = UnityEngine.Object;
@@ -34,13 +33,7 @@ namespace RiskOfThunder.RoR2Importer
                 return assemblyPath;
             }
 
-            string ror2ManagedDir = ThunderKitSetting.GetOrCreateSettings<ThunderKitSettings>().ManagedAssembliesPath;
-
-            if (!Directory.Exists(Constants.Paths.HookGenAssembliesFolder))
-            {
-                Directory.CreateDirectory(Constants.Paths.HookGenAssembliesFolder);
-            }
-            string outputPath = Path.Combine(Constants.Paths.HookGenAssembliesFolder, $"MMHOOK_{assemblyFileName}");
+            string outputPath = Path.Combine(Constants.Paths.HookGenAssembliesPackageFolder, $"MMHOOK_{assemblyFileName}");
             string hookGenPath = Path.GetFullPath(AssetDatabase.GetAssetPath(hookGenExe));
 
             List<string> arguments = new List<string>
@@ -55,7 +48,6 @@ namespace RiskOfThunder.RoR2Importer
             Debug.Log(string.Join("\n", log));
 
             return assemblyPath;
-            //return outputPath;
         }
 
         private List<string> GenerateHooks(List<string> argumentList, string hookGenPath)
@@ -73,7 +65,6 @@ namespace RiskOfThunder.RoR2Importer
             };
 
             string args = string.Join(" ", argumentList.Select(arg => $"\"{arg}\""));
-            Debug.LogError(args);
             psi.Arguments = args;
 
             var process = System.Diagnostics.Process.Start(psi);
