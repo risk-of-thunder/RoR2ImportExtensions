@@ -7,3 +7,10 @@ This package contains third-party software components governed by the license(s)
 * `Copyright (c) 2021, BepInEx`
 * [https://github.com/BepInEx/NStrip](https://github.com/BepInEx/NStrip)
 * License : [The MIT License](https://raw.githubusercontent.com/BepInEx/NStrip/master/LICENSE)
+
+## MonoMod
+
+* `Copyright (c) 2015 - 2020 0x0ade`
+* [https://github.com/MonoMod/MonoMod](https://github.com/MonoMod/MonoMod)
+* License : [The MIT License](https://raw.githubusercontent.com/MonoMod/MonoMod/master/LICENSE)
+* This library was modified to remove it's Mono.Cecil dependencies for compatibility reasons.
