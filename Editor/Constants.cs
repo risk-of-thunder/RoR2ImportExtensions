@@ -38,7 +38,7 @@
                 get
                 {
                     string tempFolder = Application.dataPath.Replace("Assets", "Temp");
-                    return Path.Combine(tempFolder, "ThunderKit", "PublicizedAssemblies");
+                    return Path.Combine(tempFolder, "ThunderKit", "HookingAssemblies");
                 }
             }
         }

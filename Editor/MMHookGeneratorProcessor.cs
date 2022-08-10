@@ -40,13 +40,14 @@ namespace RiskOfThunder.RoR2Importer
             {
                 Directory.CreateDirectory(Constants.Paths.HookGenAssembliesFolder);
             }
-            string outputPath = Path.Combine(Constants.Paths.HookGenAssembliesFolder, assemblyFileName);
+            string outputPath = Path.Combine(Constants.Paths.HookGenAssembliesFolder, $"MMHOOK_{assemblyFileName}");
             string hookGenPath = Path.GetFullPath(AssetDatabase.GetAssetPath(hookGenExe));
 
             List<string> arguments = new List<string>
             {
-                hookGenPath,
-                assemblyPath
+                "--private",
+                assemblyPath,
+                outputPath
             };
 
             List<string> log = new List<string> { $"Generating hook assembly for {assemblyFileName} with the following arguments:" };
