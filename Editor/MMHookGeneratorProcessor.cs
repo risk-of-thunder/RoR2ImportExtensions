@@ -12,7 +12,7 @@ namespace RiskOfThunder.RoR2Importer
 {
     public class MMHookGeneratorProcessor : AssemblyProcessor
     {
-        public override int Priority => 400;
+        public override int Priority => 500;
         public override string Name => $"MMHook Generator Processor";
 
         public override string Process(string assemblyPath)
@@ -57,20 +57,23 @@ namespace RiskOfThunder.RoR2Importer
             //return outputPath;
         }
 
-        private List<string> GenerateHooks(List<string> arguments, string hookGenPath)
+        private List<string> GenerateHooks(List<string> argumentList, string hookGenPath)
         {
             var logger = new List<string>();
-            for (int i = 0; i < arguments.Count; i++)
+            for (int i = 0; i < argumentList.Count; i++)
             {
-                logger.Add($"Argument {i}: {arguments[i]}");
+                logger.Add($"Argument {i}: {argumentList[i]}");
             }
 
             ProcessStartInfo psi = new ProcessStartInfo(hookGenPath)
             {
                 WorkingDirectory = Path.GetDirectoryName(hookGenPath),
+                UseShellExecute = true,
             };
 
-            psi.Arguments = string.Join(" ", arguments.Select(arg => $"\"{arg}\""));
+            string args = string.Join(" ", argumentList.Select(arg => $"\"{arg}\""));
+            Debug.LogError(args);
+            psi.Arguments = args;
 
             var process = System.Diagnostics.Process.Start(psi);
             process.WaitForExit(5000);

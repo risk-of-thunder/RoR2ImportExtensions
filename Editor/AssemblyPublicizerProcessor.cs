@@ -12,7 +12,7 @@ namespace RiskOfThunder.RoR2Importer
 {
     public class AssemblyPublicizerProcessor : AssemblyProcessor
     {
-        public override int Priority => 500;
+        public override int Priority => 400;
         public override string Name => $"Assembly Publicizer Processor";
 
         public override string Process(string assemblyPath)
