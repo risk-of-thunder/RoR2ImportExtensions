@@ -34,6 +34,13 @@ namespace RiskOfThunder.RoR2Importer
             }
 
             string outputPath = Path.Combine(Constants.Paths.HookGenAssembliesPackageFolder, $"MMHOOK_{assemblyFileName}");
+
+            if (dataStorer.CachedAssembliesInAppDomain.Contains($"MMHOOK_{assemblyFileName}.dll"))
+            {
+                Debug.Log($"Not generating hook assembly for {assemblyFileName}, as there's already an assembly with the same name in the app domain.");
+                return assemblyPath;
+            }
+
             string hookGenPath = Path.GetFullPath(AssetDatabase.GetAssetPath(hookGenExe));
 
             List<string> arguments = new List<string>

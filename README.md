@@ -24,9 +24,13 @@ Note: Higher priority means it runs earlier
 |Install RoR2EditorKit|-160K|Installs the latest version of RoR2EditorKit| Optional, but recommended|
 
 ## Planned Features
-An importer to automatically generate an MMHook for RoR2.dll
+* Support the installation of multiple R2API packages once the Split Assemblies update is out.
 
 ## Changelog
+
+### 1.2.1
+
+- Added a safety catch to the MMHook generator so it doesnt accidentally create duplicate MMHook assemblies.
 
 ### 1.2.0
 
