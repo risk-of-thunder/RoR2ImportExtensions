@@ -1,0 +1,13 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <ui:VisualElement name="RootElement" class="genericHolder">
+        <Style src="GenericImporterStyle.uss" />
+        <ui:Label text="R2API Submodule Installer" name="Label" class="genericHolderHeader scriptType" />
+        <ui:VisualElement name="ButtonContainer" class="genericHolder" style="flex-direction: row; flex-wrap: wrap;">
+            <ui:Button text="Enable All" name="enableAll" tooltip="Enables all the submodules so each of them gets installed." class="50PercentButton" />
+            <ui:Button text="Disable All" name="disableAll" tooltip="Disables all the submodules so none of them gets installed." class="50PercentButton" />
+            <ui:Button text="Force Update Dependency List" name="forceUpdatePackages" tooltip="Forcefully updates the dependency list, regardless if the package count is the same (Note: This resets the settings)" style="width: 100%; margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0;" />
+        </ui:VisualElement>
+        <ui:Label text="R2API Submodules" name="Label" style="-unity-text-align: middle-center; background-color: rgb(78, 78, 78);" />
+        <ui:ListView focusable="true" item-height="18" name="submoduleListView" class="listView" />
+    </ui:VisualElement>
+</ui:UXML>
