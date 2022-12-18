@@ -4,10 +4,10 @@
 }
 
 .genericHolder {
-    border-left-color: rgb(77, 77, 77);
-    border-right-color: rgb(77, 77, 77);
-    border-top-color: rgb(77, 77, 77);
-    border-bottom-color: rgb(77, 77, 77);
+    border-left-color: rgb(40, 40, 40);
+    border-right-color: rgb(40, 40, 40);
+    border-top-color: rgb(40, 40, 40);
+    border-bottom-color: rgb(40, 40, 40);
     border-left-width: 5px;
     border-right-width: 5px;
     border-top-width: 5px;
@@ -18,11 +18,11 @@
     -unity-text-align: middle-center;
     -unity-font-style: normal;
     font-size: 20px;
-    background-color: rgb(66, 66, 66);
-    border-left-color: rgb(61, 61, 61);
-    border-right-color: rgb(61, 61, 61);
-    border-top-color: rgb(61, 61, 61);
-    border-bottom-color: rgb(61, 61, 61);
+    background-color: rgb(56, 56, 56);
+    border-left-color: rgb(50, 50, 50);
+    border-right-color: rgb(50, 50, 50);
+    border-top-color: rgb(50, 50, 50);
+    border-bottom-color: rgb(50, 50, 50);
     border-left-width: 3px;
     border-right-width: 3px;
     border-top-width: 3px;
@@ -35,11 +35,11 @@
 
 .genericHolderFoldout {
     padding-left: 8px;
-    background-color: rgb(66, 66, 66);
-    border-left-color: rgb(61, 61, 61);
-    border-right-color: rgb(61, 61, 61);
-    border-top-color: rgb(61, 61, 61);
-    border-bottom-color: rgb(61, 61, 61);
+    background-color: rgb(56, 56, 56);
+    border-left-color: rgb(50, 50, 50);
+    border-right-color: rgb(50, 50, 50);
+    border-top-color: rgb(50, 50, 50);
+    border-bottom-color: rgb(50, 50, 50);
     border-left-width: 3px;
     border-right-width: 3px;
     border-top-width: 3px;
@@ -52,11 +52,11 @@
 
 .listView {
     padding-left: 8px;
-    background-color: rgb(66, 66, 66);
-    border-left-color: rgb(61, 61, 61);
-    border-right-color: rgb(61, 61, 61);
-    border-top-color: rgb(61, 61, 61);
-    border-bottom-color: rgb(61, 61, 61);
+    background-color: rgb(56, 56, 56);
+    border-left-color: rgb(50, 50, 50);
+    border-right-color: rgb(50, 50, 50);
+    border-top-color: rgb(50, 50, 50);
+    border-bottom-color: rgb(50, 50, 50);
     border-left-width: 3px;
     border-right-width: 3px;
     border-top-width: 3px;
@@ -66,17 +66,4 @@
 
 .buttons {
     flex-direction: row;
-}
-
-.50PercentButton {
-    flex-direction: column;
-    width: 50%;
-    -unity-text-align: middle-center;
-    white-space: nowrap;
-    right: auto;
-    align-items: center;
-    padding-left: 3px;
-    padding-right: 3px;
-    margin-left: 0;
-    margin-right: 0;
 }
