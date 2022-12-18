@@ -31,7 +31,9 @@ namespace RiskOfThunder.RoR2Importer
             {
                 this.submoduleName = version.group.name;
                 this.description = version.group.Description;
-                this.dependedncyID = version.dependencyId;
+
+                var splitDependencyId = version.dependencyId.Split('-');
+                this.dependedncyID = string.Join("-", splitDependencyId[0], splitDependencyId[1]);
                 this.shouldInstall = shouldInstall;
                 dependencies = version.dependencies.Select(dep => dep.group.name).ToArray();
             }
@@ -49,17 +51,96 @@ namespace RiskOfThunder.RoR2Importer
         private SerializedObject serializedObject;
         private ListView listViewInstance;
         private ThunderstoreSource transientStore;
+        private Task task;
         public sealed override bool Execute()
         {
-            transientStore = GetThunderstoreSource();
-
-            foreach(SubmoduleInstallationData installationData in r2apiSubmodules)
+            EditorApplication.LockReloadAssemblies();
+            if(task == null)
             {
-                InstallSubmodule(installationData);
+                task = new Task(ExecuteAsync);
+                task.Start();
             }
+
+            while (!task.IsCompleted)
+                return false;
+
+            EditorApplication.UnlockReloadAssemblies();
             return true;
         }
 
+        private async void ExecuteAsync()
+        {
+            transientStore = GetThunderstoreSource();
+
+            int i = 0;
+            while(i < r2apiSubmodules.Count)
+            {
+                SubmoduleInstallationData data = r2apiSubmodules[i];
+                if(!data.shouldInstall)
+                {
+                    i++;
+                    continue;
+                }
+
+                while(EditorApplication.isCompiling)
+                {
+                    Debug.Log("Editor application compiling...");
+                    await Task.Delay(10);
+                }
+
+                bool? installInfo = await InstallSubmoduleAsync(data);
+
+                if(installInfo == true || installInfo == null) //Package installed or no package with id
+                {
+                    i++;
+                    continue;
+                }
+            }
+
+            Cleanup();
+        }
+
+        //Return true if the package installed, null if package with id doesnt exist, false if it cant install
+        private async Task<bool?> InstallSubmoduleAsync(SubmoduleInstallationData installationData)
+        {
+            try
+            {
+                if(transientStore.Packages == null || transientStore.Packages.Count == 0)
+                {
+                    Debug.LogWarning($"PackageSource at \"{THUNDERSTORE_ADDRESS}\" has no packages");
+                    transientStore.ReloadPages(true);
+                    await Task.Delay(1000);
+                    return false;
+                }
+
+                var package = transientStore.Packages.FirstOrDefault(pkg => pkg.DependencyId == installationData.dependedncyID);
+                if(package == null)
+                {
+                    Debug.LogWarning($"Could not find package with DependencyId of \"{installationData.dependedncyID}\"");
+                    return null;
+                }
+
+                if (package.Installed)
+                {
+                    Debug.LogWarning($"Not installing package with DependencyId of \"{installationData.dependedncyID}\" because it's already installed");
+                    return true;
+                }
+
+                Debug.Log($"Installing latest version of package \"{installationData.dependedncyID}\"");
+                var task = transientStore.InstallPackage(package, "latest");
+                while(!task.IsCompleted)
+                {
+                    Debug.Log("Waiting for Completion...");
+                    await Task.Delay(25);
+                }
+                return true;
+            }
+            catch(Exception e)
+            {
+                Debug.LogError(e);
+                return true;
+            }
+        }
         private ThunderstoreSource GetThunderstoreSource()
         {
             var packageSource = PackageSourceSettings.PackageSources.OfType<ThunderstoreSource>().FirstOrDefault(src => src.Url == THUNDERSTORE_ADDRESS);
@@ -73,56 +154,16 @@ namespace RiskOfThunder.RoR2Importer
                 packageSource = CreateInstance<ThunderstoreSource>();
                 packageSource.Url = THUNDERSTORE_ADDRESS;
                 packageSource.name = TRANSIENT_STORE_NAME;
-                packageSource.ReloadPages();
+                packageSource.ReloadPages(true);
                 return packageSource;
             }
             else if (packageSource.Packages == null || packageSource.Packages.Count == 0)
             {
-                packageSource.ReloadPages();
+                packageSource.ReloadPages(true);
                 return packageSource;
             }
             return packageSource;
         }
-
-        private void InstallSubmodule(SubmoduleInstallationData data)
-        {
-            if (!data.shouldInstall)
-                return;
-
-            try
-            {
-                if (transientStore.Packages == null || transientStore.Packages.Count == 0)
-                {
-                    Debug.LogWarning($"PackageSource at \"{THUNDERSTORE_ADDRESS}\" has no packages");
-                }
-
-                var splitDependencyId = data.dependedncyID.Split('-');
-
-                var depId = string.Join("-", splitDependencyId[0], splitDependencyId[1]);
-                var package = transientStore.Packages.FirstOrDefault(pkg => pkg.DependencyId == depId);
-                if (package == null)
-                {
-                    Debug.LogWarning($"Could not find package with DependencyId of \"{data.dependedncyID}\"");
-                }
-
-                if (package.Installed)
-                {
-                    Debug.LogWarning($"Not installing package with DependencyId of \"{data.dependedncyID}\" because it's already installed");
-                }
-
-                Debug.Log($"Installing latest version of package \"{data.dependedncyID}\"");
-                var task = transientStore.InstallPackage(package, "latest");
-                while(!task.IsCompleted)
-                {
-                    Debug.Log("Waiting for Completion...");
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e);
-            }
-        }
-
 
         private void Awake() => UpdateDependencies(false);
         private void OnEnable() => UpdateDependencies(false);
@@ -133,7 +174,7 @@ namespace RiskOfThunder.RoR2Importer
 
             while(transientStore.Packages == null || transientStore.Packages.Count == 0)
             {
-                transientStore.ReloadPages();
+                transientStore.ReloadPages(true);
                 await Task.Delay(1000);
             }
 
@@ -240,6 +281,8 @@ namespace RiskOfThunder.RoR2Importer
             {
                 DestroyImmediate(transientStore, true);
             }
+
+            task.Dispose();
         }
     }
 
