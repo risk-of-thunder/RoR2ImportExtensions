@@ -54,6 +54,7 @@ namespace RiskOfThunder.RoR2Importer
         private Task task;
         public sealed override bool Execute()
         {
+            transientStore = GetThunderstoreSource();
             EditorApplication.LockReloadAssemblies();
             if(task == null)
             {
@@ -70,8 +71,6 @@ namespace RiskOfThunder.RoR2Importer
 
         private async void ExecuteAsync()
         {
-            transientStore = GetThunderstoreSource();
-
             int i = 0;
             while(i < r2apiSubmodules.Count)
             {
@@ -108,8 +107,7 @@ namespace RiskOfThunder.RoR2Importer
                 if(transientStore.Packages == null || transientStore.Packages.Count == 0)
                 {
                     Debug.LogWarning($"PackageSource at \"{THUNDERSTORE_ADDRESS}\" has no packages");
-                    transientStore.ReloadPages(true);
-                    await Task.Delay(1000);
+                    await Task.Delay(5000);
                     return false;
                 }
 
@@ -154,12 +152,12 @@ namespace RiskOfThunder.RoR2Importer
                 packageSource = CreateInstance<ThunderstoreSource>();
                 packageSource.Url = THUNDERSTORE_ADDRESS;
                 packageSource.name = TRANSIENT_STORE_NAME;
-                packageSource.ReloadPages(true);
+                packageSource.ReloadPages(false);
                 return packageSource;
             }
             else if (packageSource.Packages == null || packageSource.Packages.Count == 0)
             {
-                packageSource.ReloadPages(true);
+                packageSource.ReloadPages(false);
                 return packageSource;
             }
             return packageSource;
@@ -282,7 +280,8 @@ namespace RiskOfThunder.RoR2Importer
                 DestroyImmediate(transientStore, true);
             }
 
-            task.Dispose();
+            task?.Dispose();
+            task = null;
         }
     }
 
