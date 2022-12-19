@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using ThunderKit.Core.Config;
@@ -23,6 +25,8 @@ namespace RiskOfThunder.RoR2Importer
 
         public UnityEngine.Object hookGenExecutable;
 
+        public ReadOnlyCollection<string> CachedAssembliesInAppDomain => new ReadOnlyCollection<string>(cachedAssembliesInAppDomain);
+        [SerializeField, HideInInspector] private List<string> cachedAssembliesInAppDomain = new List<string>();
         private SerializedObject serializedObject;
         private VisualElement rootVisualElement;
         private MarkdownElement MessageElement
@@ -144,6 +148,18 @@ namespace RiskOfThunder.RoR2Importer
             return hookDataStorage;
         }
 
+        [InitializeOnLoadMethod]
+        private static void ReloadCachedAppDomainAssemblies()
+        {
+            var settings = ThunderKitSettings.GetOrCreateSettings<ImportConfiguration>();
+            var configuration = settings.ConfigurationExecutors.OfType<MMHookGeneratorConfiguration>().FirstOrDefault();
+            var reloadedAssemblies = AppDomain.CurrentDomain.GetAssemblies()
+                .Select(ass => ass.Location)
+                .Select(path => Path.GetFileName(path))
+                .ToList();
+
+            configuration.cachedAssembliesInAppDomain = reloadedAssemblies;
+        }
         public override void Cleanup()
         {
             var publicizedAssemblies = Directory.EnumerateFiles(Constants.Paths.PublicizedAssembliesFolder, "*.dll", SearchOption.AllDirectories);

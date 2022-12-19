@@ -14,8 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Active: 1
   PerManifest: 1
-  ListType: 0
-  Manifests: []
+  ListType: 1
+  Manifests:
+  - {fileID: 11400000, guid: f71f398c2adc2f744ad001a7376ef087, type: 2}
   ArchiveType: 1
   Source: <ManifestStagingRoot>
   Output: <ManifestStagingRoot>.zip
