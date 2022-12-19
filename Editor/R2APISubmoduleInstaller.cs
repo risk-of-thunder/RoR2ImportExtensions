@@ -47,67 +47,74 @@ namespace RiskOfThunder.RoR2Importer
         public override string Name => $"R2APISubmoduleInstaller";
         protected override string UITemplatePath => AssetDatabase.GUIDToAssetPath("751bced02e8b4e247ad9c3a75bd38321");
 
+        /// <summary>
+        /// The current submodule that's trying to be installed.
+        /// </summary>
+        public int submoduleIndex = -1;
         public List<SubmoduleInstallationData> r2apiSubmodules = new List<SubmoduleInstallationData>();
         private SerializedObject serializedObject;
         private ListView listViewInstance;
         private ThunderstoreSource transientStore;
-        private Task task;
         public sealed override bool Execute()
         {
-            transientStore = GetThunderstoreSource();
-            EditorApplication.LockReloadAssemblies();
-            if(task == null)
+            try
             {
-                task = new Task(ExecuteAsync);
-                task.Start();
-            }
 
-            while (!task.IsCompleted)
+                //not initialized? begin initialization
+                if(submoduleIndex == -1)
+                {
+                    submoduleIndex = 0;
+                    transientStore = GetThunderstoreSource();
+                }
+
+                //Finish when all submodules have tried to install.
+                if(submoduleIndex >= r2apiSubmodules.Count)
+                {
+                    Cleanup();
+                    return true;
+                }
+
+                //there are still steps to execute, execute it and return false until we finish.
+                ExecuteStep();
                 return false;
-
-            EditorApplication.UnlockReloadAssemblies();
+            }
+            catch(Exception e)
+            {
+                Debug.LogError(e);
+                //We really want the step to return to -1 if an excecption gets thrown...
+                Cleanup();
+            }
             return true;
         }
 
-        private async void ExecuteAsync()
+        private void ExecuteStep()
         {
-            int i = 0;
-            while(i < r2apiSubmodules.Count)
+            SubmoduleInstallationData data = r2apiSubmodules[submoduleIndex];
+
+            //If the current step's data shouldnt install, go to the next one.
+            if (!data.shouldInstall)
             {
-                SubmoduleInstallationData data = r2apiSubmodules[i];
-                if(!data.shouldInstall)
-                {
-                    i++;
-                    continue;
-                }
-
-                while(EditorApplication.isCompiling)
-                {
-                    Debug.Log("Editor application compiling...");
-                    await Task.Delay(10);
-                }
-
-                bool? installInfo = await InstallSubmoduleAsync(data);
-
-                if(installInfo == true || installInfo == null) //Package installed or no package with id
-                {
-                    i++;
-                    continue;
-                }
+                submoduleIndex++;
+                return;
             }
 
-            Cleanup();
+            bool? installInfo = InstallSubmodule(data);
+
+            if(installInfo == true || installInfo == null)//Package installed or no package with id
+            {
+                submoduleIndex++;
+                return;
+            }
         }
 
         //Return true if the package installed, null if package with id doesnt exist, false if it cant install
-        private async Task<bool?> InstallSubmoduleAsync(SubmoduleInstallationData installationData)
+        private bool? InstallSubmodule(SubmoduleInstallationData installationData)
         {
             try
             {
                 if(transientStore.Packages == null || transientStore.Packages.Count == 0)
                 {
                     Debug.LogWarning($"PackageSource at \"{THUNDERSTORE_ADDRESS}\" has no packages");
-                    await Task.Delay(5000);
                     return false;
                 }
 
@@ -129,14 +136,13 @@ namespace RiskOfThunder.RoR2Importer
                 while(!task.IsCompleted)
                 {
                     Debug.Log("Waiting for Completion...");
-                    await Task.Delay(25);
                 }
                 return true;
             }
             catch(Exception e)
             {
                 Debug.LogError(e);
-                return true;
+                return null;
             }
         }
         private ThunderstoreSource GetThunderstoreSource()
@@ -280,8 +286,7 @@ namespace RiskOfThunder.RoR2Importer
                 DestroyImmediate(transientStore, true);
             }
 
-            task?.Dispose();
-            task = null;
+            submoduleIndex = -1;
         }
     }
 
