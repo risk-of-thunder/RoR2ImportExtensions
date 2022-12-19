@@ -43,8 +43,9 @@ namespace RiskOfThunder.RoR2Importer
         private const string AUTHOR_NAME = "RiskofThunder";
         private const string SUBMODULE_STARTING_WORDS = "R2API";
         private const string TRANSIENT_STORE_NAME = "transient-store";
+        public override string Description => "Allows you to install any and all of R2API's SubModules.";
         public override int Priority => Constants.Priority.InstallR2API;
-        public override string Name => $"R2APISubmoduleInstaller";
+        public override string Name => $"R2API Submodule Installer";
         protected override string UITemplatePath => AssetDatabase.GUIDToAssetPath("751bced02e8b4e247ad9c3a75bd38321");
 
         /// <summary>

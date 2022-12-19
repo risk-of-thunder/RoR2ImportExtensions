@@ -19,7 +19,7 @@ Note: Higher priority means it runs earlier
 |Configure Addressable Graphics Settings|-5.01K|Assigns the Risk of Rain 2 DeferredShading and DeferredReflectionCustom shaders in the Addressable Graphics settings and by proxy in the Project's Graphics Settings|Recommended
 |Ensure RoR2 Thunderstore Source|-125k|Ensures the creation of a thunderstore source that points to https://thunderstore.io|Recommended
 |Install BepInExPack|-135K|Installs the latest version of BepInExPack|Extremely Recommended
-|Install R2API|-145K|Installs the latest version of R2API|Optional but Recommended|
+|R2API Submodule Installer|-145K|Allows you to pick and choose what submodules of R2API to install to your project.|Optional but Recommended|
 |Install RoR2MultiplayerHLAPI|-155K|Installs the latest version of the RoR2MultiplayerHLAPI and prevents the game's com.unity.mulitplayerhlapi.runtime.dll from being imported|Extremely Recommended
 |Install RoR2EditorKit|-160K|Installs the latest version of RoR2EditorKit| Optional, but recommended|
 
@@ -28,8 +28,9 @@ Note: Higher priority means it runs earlier
 
 ## Changelog
 
-### 1.2.1
+### 1.3.0
 
+- Updated Install R2API to the R2API Submodule Installer, updating the importer to properly support the Split Assemblies update.
 - Added a safety catch to the MMHook generator so it doesnt accidentally create duplicate MMHook assemblies.
 
 ### 1.2.0
