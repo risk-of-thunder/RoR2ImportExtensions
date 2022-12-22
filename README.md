@@ -24,9 +24,15 @@ Note: Higher priority means it runs earlier
 |Install RoR2EditorKit|-160K|Installs the latest version of RoR2EditorKit| Optional, but recommended|
 
 ## Planned Features
-* Support the installation of multiple R2API packages once the Split Assemblies update is out.
+* Got any ideas? suggest them in the modding discord's "Editor Extensions" channel!
 
 ## Changelog
+
+### 1.3.1
+
+- Added a method to serialize R2API submodule installation as hard dependencies.
+	- These hard dependencies are managed by a serialized JSON file.
+	- The hard dependencies will persist even if the import configuration asset is removed/deleted
 
 ### 1.3.0
 

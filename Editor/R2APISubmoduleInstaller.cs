@@ -1,22 +1,60 @@
-﻿using ThunderKit.Core.Config;
-using System;
-using System.Linq;
-using ThunderKit.Core.Data;
-using ThunderKit.Core.Utilities;
-using UnityEditor;
-using UnityEngine;
-using ThunderKit.Integrations.Thunderstore;
-using UObject = UnityEngine.Object;
-using UnityEngine.UIElements;
-using System.Threading.Tasks;
+﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
+using System.Linq;
+using System.Threading.Tasks;
+using ThunderKit.Core.Config;
+using ThunderKit.Core.Data;
+using ThunderKit.Integrations.Thunderstore;
+using UnityEditor;
 using UnityEditor.UIElements;
+using UnityEngine;
+using UnityEngine.UIElements;
+using System.IO;
 
 namespace RiskOfThunder.RoR2Importer
 {
     public class R2APISubmoduleInstaller : OptionalExecutor
     {
+        [Serializable]
+        public class SerializedR2APIDependencies
+        {
+            [SerializeField]
+            private string[] hardDependencies;
+
+            public ReadOnlyCollection<string> GetDependencies(ThunderstoreSource source)
+            {
+                List<string> dependencies = new List<string>();
+                for(int i = 0; i < hardDependencies.Length; i++)
+                {
+                    string dependencyId = hardDependencies[i];
+                    if(string.IsNullOrEmpty(dependencyId) || string.IsNullOrWhiteSpace(dependencyId))
+                    {
+                        Debug.LogWarning($"Submodule Hard Dependency Warning: dependency at index {i} is null, empty, or whitespace.");
+                        continue;
+                    }
+
+                    string[] splitID = dependencyId.Split('-');
+                    if(splitID.Length <= 1)
+                    {
+                        Debug.LogWarning($"Submodule Hard Dependency Warning: dependency at index {i} is not formatted correctly, expected a split dependency ID array length of 2 or greater, got 1 or less");
+                        continue;
+                    }
+
+                    string finalizedID = string.Join("-", splitID[0], splitID[1]);
+                    dependencies.Add(finalizedID);
+                }
+
+                return new ReadOnlyCollection<string>(dependencies);
+            }
+            
+            public SerializedR2APIDependencies() { }
+            public SerializedR2APIDependencies(IEnumerable<SubmoduleInstallationData> toSerialize)
+            {
+                hardDependencies = toSerialize.Where(x => x != null && x.shouldInstall).Select(x => x.dependedncyID).ToArray();
+            }
+        }
         [Serializable]
         public class SubmoduleInstallationData
         {
@@ -25,9 +63,10 @@ namespace RiskOfThunder.RoR2Importer
             public string description;
             public string dependedncyID;
             public bool shouldInstall;
+            public bool isHardDependency;
             public string[] dependencies;
         
-            public SubmoduleInstallationData(ThunderKit.Core.Data.PackageVersion version, bool shouldInstall)
+            public SubmoduleInstallationData(ThunderKit.Core.Data.PackageVersion version, bool shouldInstall, bool isHardDependency)
             {
                 this.submoduleName = version.group.name;
                 this.description = version.group.Description;
@@ -36,6 +75,7 @@ namespace RiskOfThunder.RoR2Importer
                 this.dependedncyID = string.Join("-", splitDependencyId[0], splitDependencyId[1]);
                 this.shouldInstall = shouldInstall;
                 dependencies = version.dependencies.Select(dep => dep.group.name).ToArray();
+                this.isHardDependency = isHardDependency;
             }
         }
 
@@ -52,7 +92,9 @@ namespace RiskOfThunder.RoR2Importer
         /// The current submodule that's trying to be installed.
         /// </summary>
         public int submoduleIndex = -1;
+        public bool serializeSelectionIntoJson = true;
         public List<SubmoduleInstallationData> r2apiSubmodules = new List<SubmoduleInstallationData>();
+        public ReadOnlyCollection<string> hardDependencies;
         private SerializedObject serializedObject;
         private ListView listViewInstance;
         private ThunderstoreSource transientStore;
@@ -60,7 +102,6 @@ namespace RiskOfThunder.RoR2Importer
         {
             try
             {
-
                 //not initialized? begin initialization
                 if(submoduleIndex == -1)
                 {
@@ -71,6 +112,10 @@ namespace RiskOfThunder.RoR2Importer
                 //Finish when all submodules have tried to install.
                 if(submoduleIndex >= r2apiSubmodules.Count)
                 {
+                    if(serializeSelectionIntoJson)
+                    {
+                        SerializeSelection();
+                    }
                     Cleanup();
                     return true;
                 }
@@ -190,6 +235,16 @@ namespace RiskOfThunder.RoR2Importer
                 return;
             }
 
+            if(hardDependencies == null)
+            {
+                var serializedSelection = AssetDatabase.LoadAssetAtPath<TextAsset>("ASsets/ThunderKitSettings/SerializedR2APISubmoduleDependencies.json");
+                if(serializedSelection)
+                {
+                    SerializedR2APIDependencies serializedDependencies = JsonUtility.FromJson<SerializedR2APIDependencies>(serializedSelection.text);
+                    hardDependencies = serializedDependencies.GetDependencies(transientStore);
+                }
+            }
+
             var riskOfThunderPackages = transientStore.Packages.Where(pkg => pkg.Author == AUTHOR_NAME && pkg.PackageName.StartsWith(SUBMODULE_STARTING_WORDS)).ToList();
 
             if(riskOfThunderPackages == null || riskOfThunderPackages.Count == 0)
@@ -206,27 +261,41 @@ namespace RiskOfThunder.RoR2Importer
                 return;
             }
 
-            r2apiSubmodules.Clear();
-            foreach (var submodule in riskOfThunderPackages)
-            { 
-                if(submodule.DependencyId.Contains("Core"))
-                {
-                    r2apiSubmodules.Insert(0, new SubmoduleInstallationData(submodule["latest"], true));
-                }
-                else if(submodule.DependencyId.Contains("ContentManagement"))
-                {
-                    r2apiSubmodules.Insert(0, new SubmoduleInstallationData(submodule["latest"], true));
-                }
-                else
-                {
-                    r2apiSubmodules.Add(new SubmoduleInstallationData(submodule["latest"], true));
-                }
-            }
+            UpdateDependencyList(riskOfThunderPackages);
             Cleanup();
         }
 
+        private void UpdateDependencyList(List<PackageGroup> r2apiPackages)
+        {
+            r2apiSubmodules.Clear();
+            foreach (var submodule in r2apiPackages)
+            {
+                bool isHardDependency = hardDependencies == null ? false : hardDependencies.Contains(submodule.DependencyId);
+                r2apiSubmodules.Add(new SubmoduleInstallationData(submodule["latest"], true, isHardDependency));
+            }
+
+            var ordered = r2apiSubmodules.OrderBy(x => x.submoduleName).ToList();
+            var coreIndex = r2apiSubmodules.FindIndex(x => x.dependedncyID == "RiskofThunder-R2API_Core");
+            if(coreIndex != -1)
+            {
+                var core = ordered[coreIndex];
+                ordered.Remove(core);
+                ordered.Insert(0, core);
+            }
+
+            r2apiSubmodules = ordered;
+        }
         protected override VisualElement CreateProperties()
         {
+            if (hardDependencies == null)
+            {
+                var serializedSelection = AssetDatabase.LoadAssetAtPath<TextAsset>("ASsets/ThunderKitSettings/SerializedR2APISubmoduleDependencies.json");
+                if (serializedSelection)
+                {
+                    SerializedR2APIDependencies serializedDependencies = JsonUtility.FromJson<SerializedR2APIDependencies>(serializedSelection.text);
+                    hardDependencies = serializedDependencies.GetDependencies(transientStore);
+                }
+            }
             serializedObject = new SerializedObject(this);
 
             var root = base.CreateProperties();
@@ -235,6 +304,10 @@ namespace RiskOfThunder.RoR2Importer
             buttonContainer.Q<Button>("enableAll").clickable.clicked += EnableAllSubmodules;
             buttonContainer.Q<Button>("disableAll").clickable.clicked += DisableAllSubmodules;
             buttonContainer.Q<Button>("forceUpdatePackages").clickable.clicked += ForceUpdatePackages;
+            if(hardDependencies != null)
+            {
+                buttonContainer.Add(new IMGUIContainer(() => EditorGUILayout.HelpBox("Some submodule dependencies have been marked as Hard dependencies by the serialized JSON data, said data can be found in your ThunderKitSettings folder.", MessageType.Info)));
+            }
 
             listViewInstance = root.Q<ListView>("submoduleListView");
 
@@ -251,8 +324,9 @@ namespace RiskOfThunder.RoR2Importer
             for(int i = 0; i < r2apiSubmodules.Count; i++)
             {
                 var submodule = r2apiSubmodules[i];
-                
-                if (submodule.submoduleName.Contains("Core"))
+
+                bool isHardDependency = hardDependencies == null ? false : hardDependencies.Contains(submodule.dependedncyID);
+                if (submodule.submoduleName.Contains("Core") || isHardDependency)
                     continue;
 
                 submodule.shouldInstall = false;
@@ -266,7 +340,8 @@ namespace RiskOfThunder.RoR2Importer
             {
                 var submodule = r2apiSubmodules[i];
 
-                if (submodule.submoduleName.Contains("Core"))
+                bool isHardDependency = hardDependencies == null ? false : hardDependencies.Contains(submodule.dependedncyID);
+                if (submodule.submoduleName.Contains("Core") || isHardDependency)
                     continue;
 
                 submodule.shouldInstall = true;
@@ -286,8 +361,17 @@ namespace RiskOfThunder.RoR2Importer
             {
                 DestroyImmediate(transientStore, true);
             }
-
             submoduleIndex = -1;
+        }
+
+        private void SerializeSelection()
+        {
+            SerializedR2APIDependencies newSerializedSelection = new SerializedR2APIDependencies(r2apiSubmodules);
+            string json = JsonUtility.ToJson(newSerializedSelection, true);
+
+            string relativePath = "Assets/ThunderKitSettings/SerializedR2APISubmoduleDependencies.json";
+            string fullPath = Path.GetFullPath(relativePath);
+            File.WriteAllText(fullPath, json, System.Text.Encoding.UTF8);
         }
     }
 
@@ -315,6 +399,15 @@ namespace RiskOfThunder.RoR2Importer
         private void ShouldBeEnabledOrDisabled(Toggle toggle)
         {
             var submodule = importer.r2apiSubmodules[int.Parse(toggle.name, CultureInfo.InvariantCulture)];
+
+            //Always install serialized hard dependencies.
+            var isSerializedHardDependency = importer.hardDependencies == null ? false : importer.hardDependencies.Contains(submodule.dependedncyID);
+            if (submodule.isHardDependency || isSerializedHardDependency)
+            {
+                submodule.isHardDependency = true;
+                toggle.SetEnabled(false);
+                return;
+            }
             if(submodule.dependedncyID.Contains("Core"))
             {
                 //Core module should always be installed.
