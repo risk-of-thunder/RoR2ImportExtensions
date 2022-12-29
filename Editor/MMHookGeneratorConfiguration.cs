@@ -154,6 +154,7 @@ namespace RiskOfThunder.RoR2Importer
             var settings = ThunderKitSettings.GetOrCreateSettings<ImportConfiguration>();
             var configuration = settings.ConfigurationExecutors.OfType<MMHookGeneratorConfiguration>().FirstOrDefault();
             var reloadedAssemblies = AppDomain.CurrentDomain.GetAssemblies()
+                .Where(ass => !ass.IsDynamic)
                 .Select(ass => ass.Location)
                 .Select(path => Path.GetFileName(path))
                 .ToList();
