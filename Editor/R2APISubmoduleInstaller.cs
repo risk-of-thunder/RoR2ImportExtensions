@@ -106,11 +106,10 @@ namespace RiskOfThunder.RoR2Importer
                 if(submoduleIndex == -1)
                 {
                     submoduleIndex = 0;
-                    transientStore = GetThunderstoreSource();
                 }
-
+                transientStore = GetThunderstoreSource();
                 //Finish when all submodules have tried to install.
-                if(submoduleIndex >= r2apiSubmodules.Count)
+                if (submoduleIndex >= r2apiSubmodules.Count)
                 {
                     if(serializeSelectionIntoJson)
                     {
