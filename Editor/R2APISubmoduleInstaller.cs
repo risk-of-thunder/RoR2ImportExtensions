@@ -359,7 +359,7 @@ namespace RiskOfThunder.RoR2Importer
         {
             if(transientStore)
             {
-                DestroyImmediate(transientStore, true);
+                DestroyImmediate(transientStore);
             }
             submoduleIndex = -1;
         }
