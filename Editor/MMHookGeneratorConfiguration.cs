@@ -158,6 +158,7 @@ namespace RiskOfThunder.RoR2Importer
 
             var reloadedAssemblies = AppDomain.CurrentDomain.GetAssemblies()
                 .Where(ass => ass != null)
+                .Where(ass => !ass.IsDynamic)
                 .Select(ass => ass.Location)
                 .Where(ass => !(string.IsNullOrEmpty(ass)))
                 .Select(path => Path.GetFileName(path))
