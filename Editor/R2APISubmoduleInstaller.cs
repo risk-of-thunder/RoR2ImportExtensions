@@ -12,6 +12,9 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using System.IO;
+using ThunderKit.Core.Utilities;
+using ThunderKit.Common.Configuration;
+using ThunderKit.Core.Actions;
 
 namespace RiskOfThunder.RoR2Importer
 {
@@ -26,17 +29,17 @@ namespace RiskOfThunder.RoR2Importer
             public ReadOnlyCollection<string> GetDependencies(ThunderstoreSource source)
             {
                 List<string> dependencies = new List<string>();
-                for(int i = 0; i < hardDependencies.Length; i++)
+                for (int i = 0; i < hardDependencies.Length; i++)
                 {
                     string dependencyId = hardDependencies[i];
-                    if(string.IsNullOrEmpty(dependencyId) || string.IsNullOrWhiteSpace(dependencyId))
+                    if (string.IsNullOrEmpty(dependencyId) || string.IsNullOrWhiteSpace(dependencyId))
                     {
                         Debug.LogWarning($"Submodule Hard Dependency Warning: dependency at index {i} is null, empty, or whitespace.");
                         continue;
                     }
 
                     string[] splitID = dependencyId.Split('-');
-                    if(splitID.Length <= 1)
+                    if (splitID.Length <= 1)
                     {
                         Debug.LogWarning($"Submodule Hard Dependency Warning: dependency at index {i} is not formatted correctly, expected a split dependency ID array length of 2 or greater, got 1 or less");
                         continue;
@@ -48,7 +51,7 @@ namespace RiskOfThunder.RoR2Importer
 
                 return new ReadOnlyCollection<string>(dependencies);
             }
-            
+
             public SerializedR2APIDependencies() { }
             public SerializedR2APIDependencies(IEnumerable<SubmoduleInstallationData> toSerialize)
             {
@@ -65,7 +68,7 @@ namespace RiskOfThunder.RoR2Importer
             public bool shouldInstall;
             public bool isHardDependency;
             public string[] dependencies;
-        
+
             public SubmoduleInstallationData(ThunderKit.Core.Data.PackageVersion version, bool shouldInstall, bool isHardDependency)
             {
                 this.submoduleName = version.group.name;
@@ -103,7 +106,7 @@ namespace RiskOfThunder.RoR2Importer
             try
             {
                 //not initialized? begin initialization
-                if(submoduleIndex == -1)
+                if (submoduleIndex == -1)
                 {
                     submoduleIndex = 0;
                 }
@@ -111,7 +114,7 @@ namespace RiskOfThunder.RoR2Importer
                 //Finish when all submodules have tried to install.
                 if (submoduleIndex >= r2apiSubmodules.Count)
                 {
-                    if(serializeSelectionIntoJson)
+                    if (serializeSelectionIntoJson)
                     {
                         SerializeSelection();
                     }
@@ -123,7 +126,7 @@ namespace RiskOfThunder.RoR2Importer
                 ExecuteStep();
                 return false;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Debug.LogError(e);
                 //We really want the step to return to -1 if an excecption gets thrown...
@@ -145,7 +148,7 @@ namespace RiskOfThunder.RoR2Importer
 
             bool? installInfo = InstallSubmodule(data);
 
-            if(installInfo == true || installInfo == null)//Package installed or no package with id
+            if (installInfo == true || installInfo == null)//Package installed or no package with id
             {
                 submoduleIndex++;
                 return;
@@ -157,14 +160,14 @@ namespace RiskOfThunder.RoR2Importer
         {
             try
             {
-                if(transientStore.Packages == null || transientStore.Packages.Count == 0)
+                if (transientStore.Packages == null || transientStore.Packages.Count == 0)
                 {
                     Debug.LogWarning($"PackageSource at \"{THUNDERSTORE_ADDRESS}\" has no packages");
                     return false;
                 }
 
                 var package = transientStore.Packages.FirstOrDefault(pkg => pkg.DependencyId == installationData.dependedncyID);
-                if(package == null)
+                if (package == null)
                 {
                     Debug.LogWarning($"Could not find package with DependencyId of \"{installationData.dependedncyID}\"");
                     return null;
@@ -172,24 +175,55 @@ namespace RiskOfThunder.RoR2Importer
 
                 if (package.Installed)
                 {
-                    Debug.LogWarning($"Not installing package with DependencyId of \"{installationData.dependedncyID}\" because it's already installed");
-                    return true;
+                    if (IsInstalledVerisonTheLatestVersion(package))
+                    {
+                        Debug.LogWarning($"Not installing latest version of package with DependencyId of \"{installationData.dependedncyID}\" because it's already installed.");
+                        return true;
+                    }
+
+                    //Version installed is not latest, delete it and then try again
+                    Debug.LogWarning($"Uninstalling current version of package with DependencyId of \"{installationData.dependedncyID}\" because a newer one exists.");
+                    UninstallPackage(package);
+                    return false;
                 }
 
                 Debug.Log($"Installing latest version of package \"{installationData.dependedncyID}\"");
                 var task = transientStore.InstallPackage(package, "latest");
-                while(!task.IsCompleted)
+                while (!task.IsCompleted)
                 {
                     Debug.Log("Waiting for Completion...");
                 }
                 return true;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Debug.LogError(e);
                 return null;
             }
         }
+
+
+        private bool IsInstalledVerisonTheLatestVersion(PackageGroup package)
+        {
+            var latestPackageVersion = package["latest"];
+
+            Version latestVersion = new Version(latestPackageVersion.version);
+            Version installedVersion = new Version(package.InstalledVersion);
+
+            return installedVersion == latestVersion;
+        }
+
+        private void UninstallPackage(PackageGroup package)
+        {
+            var packageName = package.PackageManifest.name;
+            ScriptingSymbolManager.RemoveScriptingDefine(packageName);
+            var deletePackage = CreateInstance<DeletePackage>();
+            deletePackage.directory = package.InstallDirectory;
+            deletePackage.TryDelete();
+            DestroyImmediate(deletePackage);
+            AssetDatabase.Refresh();
+        }
+
         private ThunderstoreSource GetThunderstoreSource()
         {
             var packageSource = PackageSourceSettings.PackageSources.OfType<ThunderstoreSource>().FirstOrDefault(src => src.Url == THUNDERSTORE_ADDRESS);
