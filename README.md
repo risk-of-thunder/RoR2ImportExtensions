@@ -28,11 +28,16 @@ Note: Higher priority means it runs earlier
 
 ## Changelog
 
+### 1.3.4
+
+- Fixed an issue where executing the R2APISubmoduleInstaller would result in an invalid project state
+- R2APISubmoduleInstaller now uninstalls old versions of Submodules that where added as dependencies if a newer version exists.
+
 ### 1.3.3
 
 - Fixed an issue where NotSupportedException would throw when the MMHook Generator Configuration was trying to cache assemblies
 - R2APISubmoduleInstaller doesnt destroy the Thunderstore Source if it has been ensured
-- Fixeed issue where R2APISubmoduleInstaller wouldnt properly install submodules and cause a loop spamming a warning message about no packages found.
+- Fixed issue where R2APISubmoduleInstaller wouldnt properly install submodules and cause a loop spamming a warning message about no packages found.
 
 ### 1.3.1
 
