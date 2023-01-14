@@ -91,137 +91,53 @@ namespace RiskOfThunder.RoR2Importer
         public override string Name => $"R2API Submodule Installer";
         protected override string UITemplatePath => AssetDatabase.GUIDToAssetPath("751bced02e8b4e247ad9c3a75bd38321");
 
-        /// <summary>
-        /// The current submodule that's trying to be installed.
-        /// </summary>
-        public int submoduleIndex = -1;
         public bool serializeSelectionIntoJson = true;
         public List<SubmoduleInstallationData> r2apiSubmodules = new List<SubmoduleInstallationData>();
         public ReadOnlyCollection<string> hardDependencies;
         private SerializedObject serializedObject;
         private ListView listViewInstance;
         private ThunderstoreSource transientStore;
+
         public sealed override bool Execute()
         {
-            try
+            transientStore = GetThunderstoreSource();
+            if (transientStore.Packages == null || transientStore.Packages.Count == 0)
             {
-                //not initialized? begin initialization
-                if (submoduleIndex == -1)
-                {
-                    submoduleIndex = 0;
-                }
-                transientStore = GetThunderstoreSource();
-                //Finish when all submodules have tried to install.
-                if (submoduleIndex >= r2apiSubmodules.Count)
-                {
-                    if (serializeSelectionIntoJson)
-                    {
-                        SerializeSelection();
-                    }
-                    Cleanup();
-                    return true;
-                }
-
-                //there are still steps to execute, execute it and return false until we finish.
-                ExecuteStep();
+                Debug.LogWarning($"PackageSource at \"{THUNDERSTORE_ADDRESS}\" has no packages");
                 return false;
             }
-            catch (Exception e)
+
+            List<(PackageGroup package, string version)> tupleList = new List<(PackageGroup package, string version)>();
+            foreach(SubmoduleInstallationData installationData in r2apiSubmodules)
             {
-                Debug.LogError(e);
-                //We really want the step to return to -1 if an excecption gets thrown...
-                Cleanup();
+                if(installationData.shouldInstall && GetPackageGroup(installationData, out var pkg, out var pkgVersion))
+                {
+                    tupleList.Add((pkg, pkgVersion));
+                }
+            }
+
+            var task = transientStore.InstallPackages(tupleList);
+            while (!task.IsCompleted)
+            {
+                Debug.Log("Waiting for Completion...");
             }
             return true;
         }
 
-        private void ExecuteStep()
+        private bool GetPackageGroup(SubmoduleInstallationData installationData, out PackageGroup pkg, out string pkgVersion)
         {
-            SubmoduleInstallationData data = r2apiSubmodules[submoduleIndex];
-
-            //If the current step's data shouldnt install, go to the next one.
-            if (!data.shouldInstall)
+            var package = transientStore.Packages.FirstOrDefault(p => p.DependencyId == installationData.dependedncyID);
+            if (package == null)
             {
-                submoduleIndex++;
-                return;
+                Debug.LogWarning($"Could not find package with DependencyId of \"{installationData.dependedncyID}\"");
+                pkg = null;
+                pkgVersion = null;
+                return false;
             }
 
-            bool? installInfo = InstallSubmodule(data);
-
-            if (installInfo == true || installInfo == null)//Package installed or no package with id
-            {
-                submoduleIndex++;
-                return;
-            }
-        }
-
-        //Return true if the package installed, null if package with id doesnt exist, false if it cant install
-        private bool? InstallSubmodule(SubmoduleInstallationData installationData)
-        {
-            try
-            {
-                if (transientStore.Packages == null || transientStore.Packages.Count == 0)
-                {
-                    Debug.LogWarning($"PackageSource at \"{THUNDERSTORE_ADDRESS}\" has no packages");
-                    return false;
-                }
-
-                var package = transientStore.Packages.FirstOrDefault(pkg => pkg.DependencyId == installationData.dependedncyID);
-                if (package == null)
-                {
-                    Debug.LogWarning($"Could not find package with DependencyId of \"{installationData.dependedncyID}\"");
-                    return null;
-                }
-
-                if (package.Installed)
-                {
-                    if (IsInstalledVerisonTheLatestVersion(package))
-                    {
-                        Debug.LogWarning($"Not installing latest version of package with DependencyId of \"{installationData.dependedncyID}\" because it's already installed.");
-                        return true;
-                    }
-
-                    //Version installed is not latest, delete it and then try again
-                    Debug.LogWarning($"Uninstalling current version of package with DependencyId of \"{installationData.dependedncyID}\" because a newer one exists.");
-                    UninstallPackage(package);
-                    return false;
-                }
-
-                Debug.Log($"Installing latest version of package \"{installationData.dependedncyID}\"");
-                var task = transientStore.InstallPackage(package, "latest");
-                while (!task.IsCompleted)
-                {
-                    Debug.Log("Waiting for Completion...");
-                }
-                return true;
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e);
-                return null;
-            }
-        }
-
-
-        private bool IsInstalledVerisonTheLatestVersion(PackageGroup package)
-        {
-            var latestPackageVersion = package["latest"];
-
-            Version latestVersion = new Version(latestPackageVersion.version);
-            Version installedVersion = new Version(package.InstalledVersion);
-
-            return installedVersion == latestVersion;
-        }
-
-        private void UninstallPackage(PackageGroup package)
-        {
-            var packageName = package.PackageManifest.name;
-            ScriptingSymbolManager.RemoveScriptingDefine(packageName);
-            var deletePackage = CreateInstance<DeletePackage>();
-            deletePackage.directory = package.InstallDirectory;
-            deletePackage.TryDelete();
-            DestroyImmediate(deletePackage);
-            AssetDatabase.Refresh();
+            pkg = package;
+            pkgVersion = "latest";
+            return true;
         }
 
         private ThunderstoreSource GetThunderstoreSource()
@@ -308,12 +224,20 @@ namespace RiskOfThunder.RoR2Importer
             }
 
             var ordered = r2apiSubmodules.OrderBy(x => x.submoduleName).ToList();
-            var coreIndex = r2apiSubmodules.FindIndex(x => x.dependedncyID == "RiskofThunder-R2API_Core");
+            var coreIndex = ordered.FindIndex(x => x.dependedncyID == "RiskofThunder-R2API_Core");
             if(coreIndex != -1)
             {
                 var core = ordered[coreIndex];
                 ordered.Remove(core);
                 ordered.Insert(0, core);
+            }
+
+            var contentIndex = ordered.FindIndex(x => x.dependedncyID == "RiskofThunder-R2API_ContentManagement");
+            if(contentIndex != -1)
+            {
+                var content = ordered[contentIndex];
+                ordered.Remove(content);
+                ordered.Insert(1, content);
             }
 
             r2apiSubmodules = ordered;
@@ -394,7 +318,6 @@ namespace RiskOfThunder.RoR2Importer
             {
                 DestroyImmediate(transientStore);
             }
-            submoduleIndex = -1;
         }
 
         private void SerializeSelection()
@@ -405,6 +328,7 @@ namespace RiskOfThunder.RoR2Importer
             string relativePath = "Assets/ThunderKitSettings/SerializedR2APISubmoduleDependencies.json";
             string fullPath = Path.GetFullPath(relativePath);
             File.WriteAllText(fullPath, json, System.Text.Encoding.UTF8);
+            AssetDatabase.ImportAsset(relativePath);
         }
     }
 

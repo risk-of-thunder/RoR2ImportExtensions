@@ -28,6 +28,11 @@ Note: Higher priority means it runs earlier
 
 ## Changelog
 
+### 1.3.5
+
+- Updated to use ThunderKit 7.0.0
+- Now installs the R2API Submodules in one big batch instead of one by one
+
 ### 1.3.4
 
 - Fixed an issue where executing the R2APISubmoduleInstaller would result in an invalid project state
