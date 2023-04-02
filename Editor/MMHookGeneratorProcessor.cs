@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -11,6 +12,9 @@ namespace RiskOfThunder.RoR2Importer
 {
     public class MMHookGeneratorProcessor : AssemblyProcessor
     {
+        private static List<string> CachedAssembliesInAppDomain => cachedAssembliesInAppDomain ?? (cachedAssembliesInAppDomain = GetAssemblesInAppDomain());
+        private static List<string> cachedAssembliesInAppDomain = new List<string>();
+
         public override int Priority => 500;
         public override string Name => $"MMHook Generator Processor";
 
@@ -35,7 +39,7 @@ namespace RiskOfThunder.RoR2Importer
 
             string outputPath = Path.Combine(Constants.Paths.HookGenAssembliesPackageFolder, $"MMHOOK_{assemblyFileName}");
 
-            if (dataStorer.CachedAssembliesInAppDomain.Contains($"MMHOOK_{assemblyFileName}.dll"))
+            if (CachedAssembliesInAppDomain.Contains($"MMHOOK_{assemblyFileName}.dll"))
             {
                 Debug.Log($"Not generating hook assembly for {assemblyFileName}, as there's already an assembly with the same name in the app domain.");
                 return assemblyPath;
@@ -77,6 +81,17 @@ namespace RiskOfThunder.RoR2Importer
             var process = System.Diagnostics.Process.Start(psi);
             process.WaitForExit(5000);
             return logger;
+        }
+
+        private static List<string> GetAssemblesInAppDomain()
+        {
+            return AppDomain.CurrentDomain.GetAssemblies()
+                .Where(ass => ass != null)
+                .Where(ass => !ass.IsDynamic)
+                .Select(ass => ass.Location)
+                .Where(ass => !(string.IsNullOrEmpty(ass)))
+                .Select(path => Path.GetFileName(path))
+                .ToList();
         }
     }
 }
