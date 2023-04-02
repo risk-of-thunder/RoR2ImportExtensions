@@ -25,8 +25,6 @@ namespace RiskOfThunder.RoR2Importer
 
         public UnityEngine.Object hookGenExecutable;
 
-        public ReadOnlyCollection<string> CachedAssembliesInAppDomain => new ReadOnlyCollection<string>(cachedAssembliesInAppDomain);
-        [SerializeField, HideInInspector] private List<string> cachedAssembliesInAppDomain = new List<string>();
         private SerializedObject serializedObject;
         private VisualElement rootVisualElement;
         private MarkdownElement MessageElement
@@ -148,27 +146,14 @@ namespace RiskOfThunder.RoR2Importer
             return hookDataStorage;
         }
 
-        [InitializeOnLoadMethod]
-        private static void ReloadCachedAppDomainAssemblies()
-        {
-            var settings = ThunderKitSettings.GetOrCreateSettings<ImportConfiguration>();
-            var configuration = settings.ConfigurationExecutors.OfType<MMHookGeneratorConfiguration>().FirstOrDefault();
-            if (!configuration)
-                return;
-
-            var reloadedAssemblies = AppDomain.CurrentDomain.GetAssemblies()
-                .Where(ass => ass != null)
-                .Where(ass => !ass.IsDynamic)
-                .Select(ass => ass.Location)
-                .Where(ass => !(string.IsNullOrEmpty(ass)))
-                .Select(path => Path.GetFileName(path))
-                .ToList();
-
-            configuration.cachedAssembliesInAppDomain = reloadedAssemblies;
-        }
         public override void Cleanup()
         {
-            var publicizedAssemblies = Directory.EnumerateFiles(Constants.Paths.PublicizedAssembliesFolder, "*.dll", SearchOption.AllDirectories);
+            if (!Directory.Exists(Constants.Paths.HookGenAssembliesPackageFolder))
+            {
+                return;
+            }
+
+            var publicizedAssemblies = Directory.EnumerateFiles(Constants.Paths.HookGenAssembliesPackageFolder, "*.dll", SearchOption.AllDirectories);
             foreach (string assemblyPath in publicizedAssemblies)
             {
                 File.Delete(assemblyPath);
