@@ -166,9 +166,15 @@ namespace RiskOfThunder.RoR2Importer
 
             configuration.cachedAssembliesInAppDomain = reloadedAssemblies;
         }
+
         public override void Cleanup()
         {
-            var publicizedAssemblies = Directory.EnumerateFiles(Constants.Paths.PublicizedAssembliesFolder, "*.dll", SearchOption.AllDirectories);
+            if (!Directory.Exists(Constants.Paths.HookGenAssembliesPackageFolder))
+            {
+                return;
+            }
+
+            var publicizedAssemblies = Directory.EnumerateFiles(Constants.Paths.HookGenAssembliesPackageFolder, "*.dll", SearchOption.AllDirectories);
             foreach (string assemblyPath in publicizedAssemblies)
             {
                 File.Delete(assemblyPath);

@@ -131,6 +131,11 @@ namespace RiskOfThunder.RoR2Importer
 
         public override void Cleanup()
         {
+            if (!Directory.Exists(Constants.Paths.PublicizedAssembliesFolder))
+            {
+                return;
+            }
+
             var publicizedAssemblies = Directory.EnumerateFiles(Constants.Paths.PublicizedAssembliesFolder, "*.dll", SearchOption.AllDirectories);
             foreach (string assemblyPath in publicizedAssemblies)
             {
