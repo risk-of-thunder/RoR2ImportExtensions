@@ -107,20 +107,57 @@ namespace RiskOfThunder.RoR2Importer
                 return false;
             }
 
+            PackageGroup core = null;
+            PackageGroup contentManagement = null;
             List<(PackageGroup package, string version)> tupleList = new List<(PackageGroup package, string version)>();
             foreach(SubmoduleInstallationData installationData in r2apiSubmodules)
             {
+                if (installationData.submoduleName == "R2API_Core" && installationData.shouldInstall)
+                {
+                    GetPackageGroup(installationData, out core, out _);
+                    continue;
+                }
+                if (installationData.submoduleName == "R2API_ContentManagement" && installationData.shouldInstall)
+                {
+                    GetPackageGroup(installationData, out contentManagement, out _);
+                    continue;
+                }
+
                 if(installationData.shouldInstall && GetPackageGroup(installationData, out var pkg, out var pkgVersion))
                 {
                     tupleList.Add((pkg, pkgVersion));
                 }
             }
 
-            var task = store.InstallPackages(tupleList);
+            Task task = null;
+            if(core)
+            {
+                Debug.Log("Installing R2API Core early");
+                task = store.InstallPackage(core, "latest");
+                while(!task.IsCompleted)
+                {
+                    Debug.Log("Waiting for R2API Core Installation...");
+                }
+            }
+            if(contentManagement)
+            {
+                Debug.Log("Installing R2API ContentManagement early");
+                task = store.InstallPackage(contentManagement, "latest");
+                while (!task.IsCompleted)
+                {
+                    Debug.Log("Waiting for R2API Core Installation...");
+                }
+            }
+
+            task = store.InstallPackages(tupleList);
             while (!task.IsCompleted)
             {
-                Debug.Log("Waiting for Completion...");
+                Debug.Log("Waiting for Submodule Installation...");
             }
+            
+            if (serializeSelectionIntoJson)
+                SerializeSelection();
+
             return true;
         }
 
@@ -206,7 +243,6 @@ namespace RiskOfThunder.RoR2Importer
 
             if(!forced && riskOfThunderPackages.Count == r2apiSubmodules.Count)
             {
-                Debug.Log("Not updating Dependencies for R2APISubmoduleInstaller as there is no difference between the current amount of Submodules and the cached count.");
                 Cleanup();
                 return;
             }
@@ -315,6 +351,12 @@ namespace RiskOfThunder.RoR2Importer
         }
         public override void Cleanup()
         {
+            var fullPath = Path.GetFullPath(Constants.Paths.OldMMHookPath);
+            if(Directory.Exists(fullPath))
+            {
+                File.Delete(Path.Combine(fullPath, "MMHOOK_Assembly-CSharp.dll"));
+            }
+
             if(transientStore)
             {
                 DestroyImmediate(transientStore);
