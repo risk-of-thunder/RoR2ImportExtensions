@@ -23,6 +23,7 @@
 
         public static class Paths
         {
+            public const string OldMMHookPath = "Packages/riskofthunder-hookgenpatcher/BepInEx/plugins/MMHOOK";
             public const string NStripExePath = "Packages/riskofthunder-ror2importextensions/Binary/NStrip/NStrip.exe";
             public const string HookGenExePath = "Packages/riskofthunder-ror2importextensions/Binary/MonoMod.RuntimeDetour.HookGen/MonoMod.RuntimeDetour.HookGen.exe";
             public static string PublicizedAssembliesFolder

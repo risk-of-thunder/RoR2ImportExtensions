@@ -28,6 +28,15 @@ Note: Higher priority means it runs earlier
 
 ## Changelog
 
+### 1.3.6
+
+- Fixed issue where the MMHook Generator cleanup step would throw an exception
+- Moved the AppDomain cache into the MMHook Assembly Processor
+- Removed message about not updating R2API submodule list
+- Fixed issue where R2API Submodule Dependencies werent getting serialized
+- Fixed issue where R2API Submodule Installer would install outdated versions of modules (Specifically the Core and ContentManagement submodules)
+- Installing HookGenPatcher no longer causes an invalid project state due to MMHOOK_AssemblyCSharp
+
 ### 1.3.5
 
 - Updated to use ThunderKit 7.0.0
