@@ -13,7 +13,7 @@ namespace RiskOfThunder.RoR2Importer
     public class MMHookGeneratorProcessor : AssemblyProcessor
     {
         private static List<string> CachedAssembliesInAppDomain => cachedAssembliesInAppDomain ?? (cachedAssembliesInAppDomain = GetAssemblesInAppDomain());
-        private static List<string> cachedAssembliesInAppDomain = new List<string>();
+        private static List<string> cachedAssembliesInAppDomain;
 
         public override int Priority => 500;
         public override string Name => $"MMHook Generator Processor";
