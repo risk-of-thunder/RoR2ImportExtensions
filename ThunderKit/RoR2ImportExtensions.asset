@@ -17,7 +17,7 @@ MonoBehaviour:
   Name: RoR2ImportExtensions
   Description: Import extensions for ThunderKit to stabilize and complete the RoR2
     import process
-  Version: 1.3.6
+  Version: 1.3.7
   Dependencies: []
 --- !u!114 &-221931170887336229
 MonoBehaviour:
@@ -42,6 +42,7 @@ MonoBehaviour:
   - {fileID: 4900000, guid: c5238b68c91ab8d4f8e3fda1cc6e0250, type: 3}
   - {fileID: 4900000, guid: 65ff9c3aad2d4d94aa9995b3b24126af, type: 3}
   - {fileID: 102900000, guid: 7713830d52084a8459986daa6042e4ff, type: 3}
+  - {fileID: 4900000, guid: ac47d9d98af8ee8408d4afc135cca9f8, type: 3}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
