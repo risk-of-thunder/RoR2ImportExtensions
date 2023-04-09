@@ -145,19 +145,5 @@ namespace RiskOfThunder.RoR2Importer
             var hookDataStorage = settings.ConfigurationExecutors.OfType<MMHookGeneratorConfiguration>().FirstOrDefault();
             return hookDataStorage;
         }
-
-        public override void Cleanup()
-        {
-            if (!Directory.Exists(Constants.Paths.HookGenAssembliesPackageFolder))
-            {
-                return;
-            }
-
-            var publicizedAssemblies = Directory.EnumerateFiles(Constants.Paths.HookGenAssembliesPackageFolder, "*.dll", SearchOption.AllDirectories);
-            foreach (string assemblyPath in publicizedAssemblies)
-            {
-                File.Delete(assemblyPath);
-            }
-        }
     }
 }

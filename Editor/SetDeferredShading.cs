@@ -22,6 +22,8 @@ namespace RiskOfThunder.RoR2Importer
         {
             var tierSettings = EditorGraphicsSettings.GetTierSettings(UnityEditor.BuildTargetGroup.Standalone, tier);
             tierSettings.renderingPath = UnityEngine.RenderingPath.DeferredShading;
+            tierSettings.enableLPPV = false;
+            EditorGraphicsSettings.SetTierSettings(UnityEditor.BuildTargetGroup.Standalone, tier, tierSettings);
         }
     }
 }
