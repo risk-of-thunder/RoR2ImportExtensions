@@ -21,9 +21,6 @@ namespace RiskOfThunder.RoR2Importer
             if (importConfiguration.ConfigurationExecutors.OfType<PostProcessingInstaller>().Any(ie => ie.enabled))
                 blacklist = blacklist.Append("Unity.Postprocessing.Runtime.dll");
 
-            if (importConfiguration.ConfigurationExecutors.OfType<LegacyResourceAPIPatcher>().Any(ie => ie.enabled))
-                blacklist = blacklist.Append("LegacyResourceAPI.dll");
-
             return blacklist;
         }
     }

@@ -20,68 +20,7 @@ namespace RiskOfThunder.RoR2Importer
 {
     public class R2APISubmoduleInstaller : OptionalExecutor
     {
-        [Serializable]
-        public class SerializedR2APIDependencies
-        {
-            [SerializeField]
-            private string[] hardDependencies;
-
-            public ReadOnlyCollection<string> GetDependencies(ThunderstoreSource source)
-            {
-                List<string> dependencies = new List<string>();
-                for (int i = 0; i < hardDependencies.Length; i++)
-                {
-                    string dependencyId = hardDependencies[i];
-                    if (string.IsNullOrEmpty(dependencyId) || string.IsNullOrWhiteSpace(dependencyId))
-                    {
-                        Debug.LogWarning($"Submodule Hard Dependency Warning: dependency at index {i} is null, empty, or whitespace.");
-                        continue;
-                    }
-
-                    string[] splitID = dependencyId.Split('-');
-                    if (splitID.Length <= 1)
-                    {
-                        Debug.LogWarning($"Submodule Hard Dependency Warning: dependency at index {i} is not formatted correctly, expected a split dependency ID array length of 2 or greater, got 1 or less");
-                        continue;
-                    }
-
-                    string finalizedID = string.Join("-", splitID[0], splitID[1]);
-                    dependencies.Add(finalizedID);
-                }
-
-                return new ReadOnlyCollection<string>(dependencies);
-            }
-
-            public SerializedR2APIDependencies() { }
-            public SerializedR2APIDependencies(IEnumerable<SubmoduleInstallationData> toSerialize)
-            {
-                hardDependencies = toSerialize.Where(x => x != null && x.shouldInstall).Select(x => x.dependedncyID).ToArray();
-            }
-        }
-        [Serializable]
-        public class SubmoduleInstallationData
-        {
-            public string submoduleName;
-            [TextArea(2, 3)]
-            public string description;
-            public string dependedncyID;
-            public bool shouldInstall;
-            public bool isHardDependency;
-            public string[] dependencies;
-
-            public SubmoduleInstallationData(ThunderKit.Core.Data.PackageVersion version, bool shouldInstall, bool isHardDependency)
-            {
-                this.submoduleName = version.group.name;
-                this.description = version.group.Description;
-
-                var splitDependencyId = version.dependencyId.Split('-');
-                this.dependedncyID = string.Join("-", splitDependencyId[0], splitDependencyId[1]);
-                this.shouldInstall = shouldInstall;
-                dependencies = version.dependencies.Select(dep => dep.group.name).ToArray();
-                this.isHardDependency = isHardDependency;
-            }
-        }
-
+        
         private const string THUNDERSTORE_ADDRESS = "https://thunderstore.io";
         private const string AUTHOR_NAME = "RiskofThunder";
         private const string SUBMODULE_STARTING_WORDS = "R2API";
@@ -104,52 +43,20 @@ namespace RiskOfThunder.RoR2Importer
             if (store.Packages == null || store.Packages.Count == 0)
             {
                 Debug.LogWarning($"PackageSource at \"{THUNDERSTORE_ADDRESS}\" has no packages");
+                store.ReloadPages(true);
                 return false;
             }
 
-            PackageGroup core = null;
-            PackageGroup contentManagement = null;
-            List<(PackageGroup package, string version)> tupleList = new List<(PackageGroup package, string version)>();
+            List<PackageGroup> packages = new List<PackageGroup>();
             foreach(SubmoduleInstallationData installationData in r2apiSubmodules)
             {
-                if (installationData.submoduleName == "R2API_Core" && installationData.shouldInstall)
+                if(installationData.shouldInstall && GetPackageGroup(installationData, out var pkg))
                 {
-                    GetPackageGroup(installationData, out core, out _);
-                    continue;
-                }
-                if (installationData.submoduleName == "R2API_ContentManagement" && installationData.shouldInstall)
-                {
-                    GetPackageGroup(installationData, out contentManagement, out _);
-                    continue;
-                }
-
-                if(installationData.shouldInstall && GetPackageGroup(installationData, out var pkg, out var pkgVersion))
-                {
-                    tupleList.Add((pkg, pkgVersion));
+                    packages.Add(pkg);
                 }
             }
 
-            Task task = null;
-            if(core)
-            {
-                Debug.Log("Installing R2API Core early");
-                task = store.InstallPackage(core, "latest");
-                while(!task.IsCompleted)
-                {
-                    Debug.Log("Waiting for R2API Core Installation...");
-                }
-            }
-            if(contentManagement)
-            {
-                Debug.Log("Installing R2API ContentManagement early");
-                task = store.InstallPackage(contentManagement, "latest");
-                while (!task.IsCompleted)
-                {
-                    Debug.Log("Waiting for R2API Core Installation...");
-                }
-            }
-
-            task = store.InstallPackages(tupleList);
+            var task = store.InstallPackages(packages, true);
             while (!task.IsCompleted)
             {
                 Debug.Log("Waiting for Submodule Installation...");
@@ -161,19 +68,17 @@ namespace RiskOfThunder.RoR2Importer
             return true;
         }
 
-        private bool GetPackageGroup(SubmoduleInstallationData installationData, out PackageGroup pkg, out string pkgVersion)
+        private bool GetPackageGroup(SubmoduleInstallationData installationData, out PackageGroup pkg)
         {
             var package = transientStore.Packages.FirstOrDefault(p => p.DependencyId == installationData.dependedncyID);
             if (package == null)
             {
                 Debug.LogWarning($"Could not find package with DependencyId of \"{installationData.dependedncyID}\"");
                 pkg = null;
-                pkgVersion = null;
                 return false;
             }
 
             pkg = package;
-            pkgVersion = "latest";
             return true;
         }
 
@@ -373,6 +278,69 @@ namespace RiskOfThunder.RoR2Importer
             File.WriteAllText(fullPath, json, System.Text.Encoding.UTF8);
             AssetDatabase.ImportAsset(relativePath);
         }
+
+        [Serializable]
+        public class SerializedR2APIDependencies
+        {
+            [SerializeField]
+            private string[] hardDependencies;
+
+            public ReadOnlyCollection<string> GetDependencies(ThunderstoreSource source)
+            {
+                List<string> dependencies = new List<string>();
+                for (int i = 0; i < hardDependencies.Length; i++)
+                {
+                    string dependencyId = hardDependencies[i];
+                    if (string.IsNullOrEmpty(dependencyId) || string.IsNullOrWhiteSpace(dependencyId))
+                    {
+                        Debug.LogWarning($"Submodule Hard Dependency Warning: dependency at index {i} is null, empty, or whitespace.");
+                        continue;
+                    }
+
+                    string[] splitID = dependencyId.Split('-');
+                    if (splitID.Length <= 1)
+                    {
+                        Debug.LogWarning($"Submodule Hard Dependency Warning: dependency at index {i} is not formatted correctly, expected a split dependency ID array length of 2 or greater, got 1 or less");
+                        continue;
+                    }
+
+                    string finalizedID = string.Join("-", splitID[0], splitID[1]);
+                    dependencies.Add(finalizedID);
+                }
+
+                return new ReadOnlyCollection<string>(dependencies);
+            }
+
+            public SerializedR2APIDependencies() { }
+            public SerializedR2APIDependencies(IEnumerable<SubmoduleInstallationData> toSerialize)
+            {
+                hardDependencies = toSerialize.Where(x => x != null && x.shouldInstall).Select(x => x.dependedncyID).ToArray();
+            }
+        }
+        [Serializable]
+        public class SubmoduleInstallationData
+        {
+            public string submoduleName;
+            [TextArea(2, 3)]
+            public string description;
+            public string dependedncyID;
+            public bool shouldInstall;
+            public bool isHardDependency;
+            public string[] dependencies;
+
+            public SubmoduleInstallationData(ThunderKit.Core.Data.PackageVersion version, bool shouldInstall, bool isHardDependency)
+            {
+                this.submoduleName = version.group.name;
+                this.description = version.group.Description;
+
+                var splitDependencyId = version.dependencyId.Split('-');
+                this.dependedncyID = string.Join("-", splitDependencyId[0], splitDependencyId[1]);
+                this.shouldInstall = shouldInstall;
+                dependencies = version.dependencies.Select(dep => dep.group.name).ToArray();
+                this.isHardDependency = isHardDependency;
+            }
+        }
+
     }
 
     [CustomPropertyDrawer(typeof(R2APISubmoduleInstaller.SubmoduleInstallationData))]
