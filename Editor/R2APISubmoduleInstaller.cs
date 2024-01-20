@@ -107,49 +107,16 @@ namespace RiskOfThunder.RoR2Importer
                 return false;
             }
 
-            PackageGroup core = null;
-            PackageGroup contentManagement = null;
-            List<(PackageGroup package, string version)> tupleList = new List<(PackageGroup package, string version)>();
-            foreach(SubmoduleInstallationData installationData in r2apiSubmodules)
+            List<PackageGroup> packageList = new List<PackageGroup>();
+            foreach(SubmoduleInstallationData data in r2apiSubmodules)
             {
-                if (installationData.submoduleName == "R2API_Core" && installationData.shouldInstall)
+                if(data.shouldInstall && GetPackageGroup(data, out var pkg, out _))
                 {
-                    GetPackageGroup(installationData, out core, out _);
-                    continue;
-                }
-                if (installationData.submoduleName == "R2API_ContentManagement" && installationData.shouldInstall)
-                {
-                    GetPackageGroup(installationData, out contentManagement, out _);
-                    continue;
-                }
-
-                if(installationData.shouldInstall && GetPackageGroup(installationData, out var pkg, out var pkgVersion))
-                {
-                    tupleList.Add((pkg, pkgVersion));
+                    packageList.Add(pkg);
                 }
             }
 
-            Task task = null;
-            if(core)
-            {
-                Debug.Log("Installing R2API Core early");
-                task = store.InstallPackage(core, "latest");
-                while(!task.IsCompleted)
-                {
-                    Debug.Log("Waiting for R2API Core Installation...");
-                }
-            }
-            if(contentManagement)
-            {
-                Debug.Log("Installing R2API ContentManagement early");
-                task = store.InstallPackage(contentManagement, "latest");
-                while (!task.IsCompleted)
-                {
-                    Debug.Log("Waiting for R2API Core Installation...");
-                }
-            }
-
-            task = store.InstallPackages(tupleList);
+            var task = store.InstallPackages(packageList, true);
             while (!task.IsCompleted)
             {
                 Debug.Log("Waiting for Submodule Installation...");
