@@ -1,3 +1,10 @@
+### 1.4.0
+
+- Updated to use Thunderkit 8.0.6
+- Updated README.md
+- Removed LegacyResourcePatcher extension, as it now causes an invalid DLL post meteorite patch
+- R2API Submodule Installer now always installs the latest versions of the submodulef
+
 ### 1.3.7
 
 - Fixed issue where the MMHook Generator would delete the MMHook Generated Assemblies
