@@ -69,15 +69,18 @@ namespace RiskOfThunder.RoR2Importer
             public bool isHardDependency;
             public string[] dependencies;
 
-            public SubmoduleInstallationData(ThunderKit.Core.Data.PackageVersion version, bool shouldInstall, bool isHardDependency)
+            public SubmoduleInstallationData(ThunderstoreSource store, PackageGroup group, bool shouldInstall, bool isHardDependency)
             {
-                this.submoduleName = version.group.name;
-                this.description = version.group.Description;
+                this.submoduleName = group.name;
+                this.description = group.name;
 
+                var version = group["latest"];
                 var splitDependencyId = version.dependencyId.Split('-');
                 this.dependedncyID = string.Join("-", splitDependencyId[0], splitDependencyId[1]);
                 this.shouldInstall = shouldInstall;
-                dependencies = version.dependencies.Select(dep => dep.group.name).ToArray();
+                var dependenciesID = version.dependencies.Select(dp => dp.groupDependencyId).ToArray();
+                dependencies = store.Packages.Where(p => dependenciesID.Contains(p.DependencyId)).Select(p => p.name).ToArray();
+                //dependencies = version.dependencies.Select(dep => dep.groupDependencyId.name).ToArray();
                 this.isHardDependency = isHardDependency;
             }
         }
@@ -214,17 +217,17 @@ namespace RiskOfThunder.RoR2Importer
                 return;
             }
 
-            UpdateDependencyList(riskOfThunderPackages);
+            UpdateDependencyList(riskOfThunderPackages, store);
             Cleanup();
         }
 
-        private void UpdateDependencyList(List<PackageGroup> r2apiPackages)
+        private void UpdateDependencyList(List<PackageGroup> r2apiPackages, ThunderstoreSource store)
         {
             r2apiSubmodules.Clear();
             foreach (var submodule in r2apiPackages)
             {
                 bool isHardDependency = hardDependencies == null ? false : hardDependencies.Contains(submodule.DependencyId);
-                r2apiSubmodules.Add(new SubmoduleInstallationData(submodule["latest"], true, isHardDependency));
+                r2apiSubmodules.Add(new SubmoduleInstallationData(store, submodule, true, isHardDependency));
             }
 
             var ordered = r2apiSubmodules.OrderBy(x => x.submoduleName).ToList();
