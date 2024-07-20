@@ -1,9 +1,13 @@
+### 1.4.1
+- Updated to use Thunderkit 9.0.0
+- Fixed R2API Submodule installer erroring due to internal changes to how packages are handled by Thunderkit
+
 ### 1.4.0
 
 - Updated to use Thunderkit 8.0.6
 - Updated README.md
 - Removed LegacyResourcePatcher extension, as it now causes an invalid DLL post meteorite patch
-- R2API Submodule Installer now always installs the latest versions of the submodulef
+- R2API Submodule Installer now always installs the latest versions of the submodules
 
 ### 1.3.7
 
