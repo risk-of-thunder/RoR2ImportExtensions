@@ -4,6 +4,7 @@
 RoR2 Import Extensions is a *thunderkit extension* aiming to reduce the time it takes to properly set up a RoR2 Thunderkit Project.
 
 It is extremely recommended to install this and use it in the process of setting up a project, RoR2ImportExtensions can also be used as a use case example on how to extend the Thunderkit Importing Process.
+
 ### Extensions:
 Note: Higher priority means it runs earlier
 
@@ -14,6 +15,7 @@ Note: Higher priority means it runs earlier
 |Unity GUI Uninstaller|3.23M|Removes Unity GUI due to compatibility issues with the game's modified TextMeshPro library and ensures that the Unity.UI.dll is copied from the games directory|Highly Recommended|
 |Assembly Publicizer|3.125M|Publicizes the listed assemblies with N-Strip, publicized assemblies retain their editor functionality and inspector look| Recommended if publicizing is needed|
 |MMHook Generator|3.12M|Creates MMHook assemblies for the listed assemblies, allowing for hooking ingame methods to run code injection|Extremely Recommended
+| ROR2 LegacyResourceAPI Patcher | 2.75M | Patches the LegacyResourcesAPI dll to improve it's stability in the editor | Extremely Recommended |
 |Set Deferred Shading|1.9995M|Ensures that the Graphics Tiers have their Rendering Path set to Deferred after importing Project settings|Highly Recommended
 |Configure Addressable Graphics Settings|-5.01K|Assigns the Risk of Rain 2 DeferredShading and DeferredReflectionCustom shaders in the Addressable Graphics settings and by proxy in the Project's Graphics Settings|Recommended
 |Ensure RoR2 Thunderstore Source|-125k|Ensures the creation of a thunderstore source that points to https://thunderstore.io|Recommended

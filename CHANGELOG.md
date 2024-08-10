@@ -1,3 +1,6 @@
+### 1.5.0
+- Reimplemented the LegacyResourcesAPI Patcher extension so that the DLL becomes stable and dont crash on certain edge cases.
+
 ### 1.4.1
 - Updated to use Thunderkit 9.0.0
 - Fixed R2API Submodule installer erroring due to internal changes to how packages are handled by Thunderkit
