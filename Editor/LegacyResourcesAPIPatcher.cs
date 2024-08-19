@@ -3,7 +3,7 @@ using ThunderKit.Core.Config;
 
 namespace RiskOfThunder.RoR2Importer
 {
-    public class LegacyResourceAPIPatcher : ManagedAssemblyPatcher
+    public class LegacyResourcesAPIPatcher : ManagedAssemblyPatcher
     {
         public override string Name => "RoR2 LegacyResourceAPI Patcher";
         public override string Description => $"Patches the game's LegacyResourcesAPI.dll to improve stability and reduce editor hangs.";

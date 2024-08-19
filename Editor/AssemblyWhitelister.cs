@@ -5,7 +5,7 @@ using ThunderKit.Core.Data;
 
 namespace RiskOfThunder.RoR2Importer
 {
-    public class AssemblyWhitelister : WhitelistProcessor
+    /*public class AssemblyWhitelister : WhitelistProcessor
     {
         public override string Name => "RoR2 Assembly Whitelist";
 
@@ -15,12 +15,12 @@ namespace RiskOfThunder.RoR2Importer
         {
             var importConfiguration = ThunderKitSetting.GetOrCreateSettings<ImportConfiguration>();
 
-            if (importConfiguration.ConfigurationExecutors.OfType<TextMeshProUninstaller>().Any(ie => ie.enabled))
+            if (importConfiguration.ConfigurationExecutors.OfType<TextMeshProPatcher>().Any(ie => ie.enabled))
                 whitelist = whitelist.Append("Unity.TextMeshPro.dll");
 
-            if (importConfiguration.ConfigurationExecutors.OfType<UGUIUninstaller>().Any(ie => ie.enabled))
+            if (importConfiguration.ConfigurationExecutors.OfType<UGUIPatcher>().Any(ie => ie.enabled))
                 whitelist = whitelist.Append("UnityEngine.UI.dll");
             return whitelist;
         }
-    }
+    }*/
 }

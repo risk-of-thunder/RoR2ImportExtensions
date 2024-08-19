@@ -8,8 +8,8 @@
         public static class Priority
         {
             public const int PostProcessingInstaller = TkPriority.AssemblyImport + 250_000;
-            public const int TextMeshProUninstaller = TkPriority.AssemblyImport + 240_000;
-            public const int UGUIUninstaller = TkPriority.AssemblyImport + 230_000;
+            public const int UGUIPatcher = TkPriority.AssemblyImport + 240_000;
+            public const int TextMeshProPatcher = TkPriority.AssemblyImport + 230_000;
             public const int AssemblyPublicizerConfiguration = TkPriority.AssemblyImport + 125_000;
             public const int MMHookGeneratorConfiguration = TkPriority.AssemblyImport + 120_000;
             public const int LegacyResourceAPIPatcher = TkPriority.AssemblyImport - 250_000;
@@ -26,6 +26,14 @@
             public const string OldMMHookPath = "Packages/riskofthunder-hookgenpatcher/BepInEx/plugins/MMHOOK";
             public const string NStripExePath = "Packages/riskofthunder-ror2importextensions/Binary/NStrip/NStrip.exe";
             public const string HookGenExePath = "Packages/riskofthunder-ror2importextensions/Binary/MonoMod.RuntimeDetour.HookGen/MonoMod.RuntimeDetour.HookGen.exe";
+            public static string TMProMoment
+            {
+                get
+                {
+                    string tempFolder = Application.dataPath.Replace("Assets", "Temp");
+                    return Path.Combine(tempFolder, "ThunderKit", "TMProMoment");
+                }
+            }
             public static string PublicizedAssembliesFolder
             {
                 get

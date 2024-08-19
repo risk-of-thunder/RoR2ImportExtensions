@@ -1,3 +1,14 @@
+### 1.6.0
+- Removed the following extension points:
+	- UnityGUI Package Uninstaller
+	- TextMeshPro Package Uninstaller
+
+- Added the following extension points:
+	- UnityGUI Patcher
+	- TextMeshPro Patcher
+
+These new versions of the UnityGUI and TextMeshPro extension points can be used to get working editor scripts for both assemblies. allowing for proper usage of both assemblies' features.
+
 ### 1.5.0
 - Reimplemented the LegacyResourcesAPI Patcher extension so that the DLL becomes stable and dont crash on certain edge cases.
 
