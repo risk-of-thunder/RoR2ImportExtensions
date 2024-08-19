@@ -11,8 +11,8 @@ Note: Higher priority means it runs earlier
 | Extension Name | Priority | Effect | Level of Recomendation |
 |--|--|--|--|
 | PostProcessing Package Installer | 3.25M | Installs the PostProcessing package version 2.3.0 and prevents the game's PostProcessing DLL from being imported | Recommended if working with PP
-|TextMeshPro Uninstaller|3.24M|Removes Unity TextMeshPro due to compatibility issues with the games modified TextMeshPro library and ensures that Unity.TextMeshPro.dll is copied from the games directory|Highly Recommended|
-|Unity GUI Uninstaller|3.23M|Removes Unity GUI due to compatibility issues with the game's modified TextMeshPro library and ensures that the Unity.UI.dll is copied from the games directory|Highly Recommended|
+|Unity GUI Patcher|3.24M| Patcher that'll modify the game's UnityGUI assembly and installs & modifies the UnityGUI Package to allow proper functionality of the UnityGUI package in the editor.|Highly Recommended|
+|TextMeshPro Patcher|3.23M| Patcher that'll modify the game's TextMeshPro assembly and installs & modifies the TextMeshPro Package to allow proper functionality of the TextMeshPro package in the editor.|Highly Recommended|
 |Assembly Publicizer|3.125M|Publicizes the listed assemblies with N-Strip, publicized assemblies retain their editor functionality and inspector look| Recommended if publicizing is needed|
 |MMHook Generator|3.12M|Creates MMHook assemblies for the listed assemblies, allowing for hooking ingame methods to run code injection|Extremely Recommended
 | ROR2 LegacyResourceAPI Patcher | 2.75M | Patches the LegacyResourcesAPI dll to improve it's stability in the editor | Extremely Recommended |
@@ -25,4 +25,7 @@ Note: Higher priority means it runs earlier
 |Install RoR2EditorKit|-160K|Installs the latest version of RoR2EditorKit| Optional, but recommended|
 
 ## Planned Features
+
+* Make the RoR2MultiplayerHLAPI and RoR2EditorKit extension points install the latest release from github instead of utilizing the Thunderstore versions.
+
 * Got any ideas? suggest them in the modding discord's "Editor Extensions" channel!
