@@ -21,12 +21,6 @@ namespace RiskOfThunder.RoR2Importer
             if (importConfiguration.ConfigurationExecutors.OfType<PostProcessingInstaller>().Any(ie => ie.enabled))
                 blacklist = blacklist.Append("Unity.Postprocessing.Runtime.dll");
 
-            if (importConfiguration.ConfigurationExecutors.OfType<TextMeshProPatcher>().Any(ie => ie.enabled))
-                blacklist = blacklist.Append("Unity.TextMeshPro.dll");
-
-            if (importConfiguration.ConfigurationExecutors.OfType<UGUIPatcher>().Any(ie => ie.enabled))
-                blacklist = blacklist.Append("UnityEngine.UI.dll");
-
             return blacklist;
         }
     }
