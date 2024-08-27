@@ -1,6 +1,6 @@
 ﻿using System.IO;
 using ThunderKit.Core.Config;
-
+/*
 namespace RiskOfThunder.RoR2Importer
 {
     public class LegacyResourcesAPIPatcher : ManagedAssemblyPatcher
@@ -11,4 +11,4 @@ namespace RiskOfThunder.RoR2Importer
         public override string AssemblyFileName => "LegacyResourcesAPI.dll";
         public override string BsDiffPatchPath => Path.Combine("Packages", "riskofthunder-ror2importextensions", "BinaryDiff", "LegacyResourcesAPI.diff");
     }
-}
+}*/
