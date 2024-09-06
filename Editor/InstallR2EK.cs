@@ -1,21 +1,21 @@
-﻿using ThunderKit.Core.Config;
+﻿using System.Collections;
+using ThunderKit.Core.Config;
 using ThunderKit.Integrations.Thunderstore;
-using UnityEngine.Networking;
-using UnityEngine;
-using System.Collections;
 using UnityEditor.PackageManager;
+using UnityEngine;
+using UnityEngine.Networking;
 
 namespace RiskOfThunder.RoR2Importer
 {
-    public class InstallMultiplayerHLAPI : OptionalExecutor
+    public class InstallR2EK : OptionalExecutor
     {
-        private const string API_REQUEST_URL = "https://api.github.com/repos/risk-of-thunder/UnityMultiplayerHLAPI/releases/latest";
-        private const string GIT_URL = "https://github.com/risk-of-thunder/UnityMultiplayerHLAPI.git";
-        public override int Priority => Constants.Priority.InstallMHLAPI;
+        private const string API_REQUEST_URL = "https://api.github.com/repos/risk-of-thunder/RoR2EditorKit/releases/latest";
+        private const string GIT_URL = "https://github.com/risk-of-thunder/RoR2EditorKit.git";
+        public override int Priority => Constants.Priority.InstallR2EK;
 
-        public override string Description => $"Installs the RoR2MultiplayerHLAPI Package from the ThunderKit Extension store";
+        public override string Description => "Installs the RoR2 Editor Kit package from GitHub";
 
-        public override string Name => $"Install RoR2MultiplayerHLAPI";
+        public override string Name => "Install RoR2 Editor Kit";
 
 
         private IEnumerator _enumerator;
@@ -23,7 +23,7 @@ namespace RiskOfThunder.RoR2Importer
         public override bool Execute()
         {
             _enumerator ??= ExecuteCoroutine();
-            while (_enumerator.MoveNext())
+            while(_enumerator.MoveNext())
             {
                 return false;
             }
@@ -35,7 +35,7 @@ namespace RiskOfThunder.RoR2Importer
             using (UnityWebRequest webRequest = UnityWebRequest.Get(API_REQUEST_URL))
             {
                 var asyncOp = webRequest.SendWebRequest();
-                while (!asyncOp.isDone)
+                while(!asyncOp.isDone)
                 {
                     Debug.Log($"Waiting for Github API Request");
                     yield return null;
@@ -51,6 +51,7 @@ namespace RiskOfThunder.RoR2Importer
             }
             yield break;
         }
+
         public override void Cleanup()
         {
             base.Cleanup();
