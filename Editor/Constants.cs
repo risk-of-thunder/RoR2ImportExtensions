@@ -16,8 +16,8 @@
             public const int EnsureRoR2Thunderstore = TkPriority.AddressableCatalog - 125_000;
             public const int InstallBepInEx = TkPriority.AddressableCatalog - 135_000;
             public const int InstallR2API = TkPriority.AddressableCatalog - 145_000;
-            public const int InstallMLAPI = TkPriority.AddressableCatalog - 155_000;
-            public const int InstallRoR2EK = TkPriority.AddressableCatalog - 160_000;
+            public const int InstallMHLAPI = TkPriority.AddressableCatalog - 155_000;
+            public const int InstallR2EK = TkPriority.AddressableCatalog - 160_000;
             public const int ThunderstorePackageInstaller = TkPriority.AddressableCatalog - 250_000;
         }
 

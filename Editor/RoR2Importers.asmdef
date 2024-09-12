@@ -1,5 +1,6 @@
 {
     "name": "RoR2Importers",
+    "rootNamespace": "",
     "references": [
         "ThunderKit.Core",
         "ThunderKit.Common",
@@ -16,7 +17,15 @@
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": [],
-    "versionDefines": [],
+    "defineConstraints": [
+        "R2IMPORT_TK_INSTALLED"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.passivepicasso.thunderkit",
+            "expression": "9.0.0",
+            "define": "R2IMPORT_TK_INSTALLED"
+        }
+    ],
     "noEngineReferences": false
 }
