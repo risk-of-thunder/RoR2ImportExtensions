@@ -13,7 +13,7 @@ namespace RiskOfThunder.RoR2Importer
         private const string GIT_URL = "https://github.com/risk-of-thunder/UnityMultiplayerHLAPI.git";
         public override int Priority => Constants.Priority.InstallMHLAPI;
 
-        public override string Description => $"Installs the RoR2MultiplayerHLAPI Package from the ThunderKit Extension store";
+        public override string Description => $"Installs the RoR2MultiplayerHLAPI Package from from GitHub";
 
         public override string Name => $"Install RoR2MultiplayerHLAPI";
 
