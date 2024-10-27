@@ -321,16 +321,15 @@ namespace RiskOfThunder.RoR2Importer
         }
         public override void Cleanup()
         {
-            var fullPath = Path.GetFullPath(Constants.Paths.OldMMHookPath);
-            if(Directory.Exists(fullPath))
+            base.Cleanup();
+            if(AssetDatabase.AssetPathToGUID(Constants.Paths.OldMMHookPath) != string.Empty)
             {
-                File.Delete(Path.Combine(fullPath, "MMHOOK_Assembly-CSharp.dll"));
+                FileUtil.DeleteFileOrDirectory(Constants.Paths.OldMMHookPath);
             }
 
-            fullPath = Path.GetFullPath(Constants.Paths.R2API_ANIMS_ASSET_TOOLS_PATH);
-            if(File.Exists(fullPath))
+            if(AssetDatabase.AssetPathToGUID("Packages/riskofthunder-r2api_animations/plugins/R2API.Animations/AssetsTools.NET.dll") != string.Empty)
             {
-                File.Delete(fullPath);
+                FileUtil.DeleteFileOrDirectory("Packages/riskofthunder-r2api_animations/plugins/R2API.Animations/AssetsTools.NET.dll");
             }
 
             if(transientStore)

@@ -1,3 +1,11 @@
+### 1.7.1
+
+* Updated to use Thunderkit version 9.0.1
+* Fixed "Install Bepinex" extension point not installing the latest version of it's dependencies
+	* This fixes an issue where Newtonsoft.JSON wouldnt be added to the project.
+* Added proper support for installing the R2API.Animations package
+	* Deletes it's AssetTools.NET.dll to allow for the project to function properly.
+
 ### 1.7.0
 
 * Updated for unity 2021.3.33f1
