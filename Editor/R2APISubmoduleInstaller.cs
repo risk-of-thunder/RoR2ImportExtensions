@@ -327,6 +327,12 @@ namespace RiskOfThunder.RoR2Importer
                 File.Delete(Path.Combine(fullPath, "MMHOOK_Assembly-CSharp.dll"));
             }
 
+            fullPath = Path.GetFullPath(Constants.Paths.R2API_ANIMS_ASSET_TOOLS_PATH);
+            if(File.Exists(fullPath))
+            {
+                File.Delete(fullPath);
+            }
+
             if(transientStore)
             {
                 DestroyImmediate(transientStore);
