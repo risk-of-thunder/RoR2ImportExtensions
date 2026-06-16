@@ -23,7 +23,7 @@
 
         public static class Paths
         {
-            public const string R2API_ANIMS_ASSET_TOOLS_PATH = "Packages/R2API_Animations/plugins/R2API.Animations/AssetTools.NET.dll";
+            public const string R2API_ANIMS_ASSET_TOOLS_PATH = "Packages/riskofthunder-r2api_animations/plugins/R2API.Animations/AssetsTools.NET.dll";
             public const string OldMMHookPath = "Packages/riskofthunder-hookgenpatcher/BepInEx/plugins/MMHOOK";
             public const string NStripExePath = "Packages/riskofthunder-ror2importextensions/Binary/NStrip/NStrip.exe";
             public const string HookGenExePath = "Packages/riskofthunder-ror2importextensions/Binary/MonoMod.RuntimeDetour.HookGen/MonoMod.RuntimeDetour.HookGen.exe";

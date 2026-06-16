@@ -1,3 +1,8 @@
+### 1.7.2
+
+* `R2APISubmoduleInstaller` no longer tries to retrieve packages info from Thunderstore on each domain reload.
+* Updated Thunderstore urls to use community format.
+
 ### 1.7.1
 
 * Updated to use Thunderkit version 9.0.1

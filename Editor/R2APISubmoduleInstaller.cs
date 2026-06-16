@@ -85,7 +85,7 @@ namespace RiskOfThunder.RoR2Importer
             }
         }
 
-        private const string THUNDERSTORE_ADDRESS = "https://thunderstore.io";
+        private const string THUNDERSTORE_ADDRESS = "https://thunderstore.io/c/riskofrain2";
         private const string AUTHOR_NAME = "RiskofThunder";
         private const string SUBMODULE_STARTING_WORDS = "R2API";
         private const string TRANSIENT_STORE_NAME = "transient-store";
@@ -104,6 +104,11 @@ namespace RiskOfThunder.RoR2Importer
         public sealed override bool Execute()
         {
             var store = GetThunderstoreSource();
+            if (store.IsLoadingPages)
+            {
+                return false;
+            }
+
             if (store.Packages == null || store.Packages.Count == 0)
             {
                 Debug.LogWarning($"PackageSource at \"{THUNDERSTORE_ADDRESS}\" has no packages");
@@ -113,7 +118,7 @@ namespace RiskOfThunder.RoR2Importer
             List<PackageGroup> packageList = new List<PackageGroup>();
             foreach(SubmoduleInstallationData data in r2apiSubmodules)
             {
-                if(data.shouldInstall && GetPackageGroup(data, out var pkg, out _))
+                if(data.shouldInstall && GetPackageGroup(store, data, out var pkg, out _))
                 {
                     packageList.Add(pkg);
                 }
@@ -131,9 +136,9 @@ namespace RiskOfThunder.RoR2Importer
             return true;
         }
 
-        private bool GetPackageGroup(SubmoduleInstallationData installationData, out PackageGroup pkg, out string pkgVersion)
+        private bool GetPackageGroup(ThunderstoreSource store, SubmoduleInstallationData installationData, out PackageGroup pkg, out string pkgVersion)
         {
-            var package = transientStore.Packages.FirstOrDefault(p => p.DependencyId == installationData.dependedncyID);
+            var package = store.Packages.FirstOrDefault(p => p.DependencyId == installationData.dependedncyID);
             if (package == null)
             {
                 Debug.LogWarning($"Could not find package with DependencyId of \"{installationData.dependedncyID}\"");
@@ -172,46 +177,40 @@ namespace RiskOfThunder.RoR2Importer
             return packageSource;
         }
 
-        private void Awake() => UpdateDependencies(false);
-        private void OnEnable() => UpdateDependencies(false);
-
         private async void UpdateDependencies(bool forced)
         {
             var store = GetThunderstoreSource();
-
-            while(store.Packages == null || store.Packages.Count == 0)
+            if (forced)
             {
                 store.ReloadPages(true);
+            }
+
+            while (store.IsLoadingPages)
+            {
                 await Task.Delay(1000);
             }
 
-            if (store.Packages == null || store.Packages.Count == 0)
+            var serializedSelection = AssetDatabase.LoadAssetAtPath<TextAsset>("Assets/ThunderKitSettings/SerializedR2APISubmoduleDependencies.json");
+            if (serializedSelection)
             {
-                Debug.LogWarning($"PackageSource at \"{THUNDERSTORE_ADDRESS}\" has no packages");
-                Cleanup();
-                return;
+                SerializedR2APIDependencies serializedDependencies = JsonUtility.FromJson<SerializedR2APIDependencies>(serializedSelection.text);
+                hardDependencies = serializedDependencies.GetDependencies(store);
             }
-
-            if(hardDependencies == null)
+            else
             {
-                var serializedSelection = AssetDatabase.LoadAssetAtPath<TextAsset>("ASsets/ThunderKitSettings/SerializedR2APISubmoduleDependencies.json");
-                if(serializedSelection)
-                {
-                    SerializedR2APIDependencies serializedDependencies = JsonUtility.FromJson<SerializedR2APIDependencies>(serializedSelection.text);
-                    hardDependencies = serializedDependencies.GetDependencies(store);
-                }
+                hardDependencies = null;
             }
 
             var riskOfThunderPackages = store.Packages.Where(pkg => pkg.Author == AUTHOR_NAME && pkg.PackageName.StartsWith(SUBMODULE_STARTING_WORDS)).ToList();
 
-            if(riskOfThunderPackages == null || riskOfThunderPackages.Count == 0)
+            if (riskOfThunderPackages == null || riskOfThunderPackages.Count == 0)
             {
                 Debug.LogWarning($"Could not find any package that starts with {SUBMODULE_STARTING_WORDS} and it's author is {AUTHOR_NAME}");
                 Cleanup();
                 return;
             }
 
-            if(!forced && riskOfThunderPackages.Count == r2apiSubmodules.Count)
+            if (!forced && riskOfThunderPackages.Count == r2apiSubmodules.Count)
             {
                 Cleanup();
                 return;
@@ -251,15 +250,7 @@ namespace RiskOfThunder.RoR2Importer
         }
         protected override VisualElement CreateProperties()
         {
-            if (hardDependencies == null)
-            {
-                var serializedSelection = AssetDatabase.LoadAssetAtPath<TextAsset>("ASsets/ThunderKitSettings/SerializedR2APISubmoduleDependencies.json");
-                if (serializedSelection)
-                {
-                    SerializedR2APIDependencies serializedDependencies = JsonUtility.FromJson<SerializedR2APIDependencies>(serializedSelection.text);
-                    hardDependencies = serializedDependencies.GetDependencies(transientStore);
-                }
-            }
+            UpdateDependencies(false);
             serializedObject = new SerializedObject(this);
 
             var root = base.CreateProperties();
@@ -268,10 +259,14 @@ namespace RiskOfThunder.RoR2Importer
             buttonContainer.Q<Button>("enableAll").clickable.clicked += EnableAllSubmodules;
             buttonContainer.Q<Button>("disableAll").clickable.clicked += DisableAllSubmodules;
             buttonContainer.Q<Button>("forceUpdatePackages").clickable.clicked += ForceUpdatePackages;
-            if(hardDependencies != null)
+
+            buttonContainer.Add(new IMGUIContainer(() =>
             {
-                buttonContainer.Add(new IMGUIContainer(() => EditorGUILayout.HelpBox("Some submodule dependencies have been marked as Hard dependencies by the serialized JSON data, said data can be found in your ThunderKitSettings folder.", MessageType.Info)));
-            }
+                if (hardDependencies != null)
+                {
+                    EditorGUILayout.HelpBox("Some submodule dependencies have been marked as Hard dependencies by the serialized JSON data, said data can be found in your ThunderKitSettings folder.", MessageType.Info);
+                }
+            }));
 
             listViewInstance = root.Q<ListView>("submoduleListView");
 
@@ -280,7 +275,7 @@ namespace RiskOfThunder.RoR2Importer
 
         private void ForceUpdatePackages()
         {
-            UpdateDependencies(true);    
+            UpdateDependencies(true);
         }
 
         private void DisableAllSubmodules()
@@ -322,17 +317,20 @@ namespace RiskOfThunder.RoR2Importer
         public override void Cleanup()
         {
             base.Cleanup();
-            if(AssetDatabase.AssetPathToGUID(Constants.Paths.OldMMHookPath) != string.Empty)
+
+            if (AssetDatabase.AssetPathToGUID(Constants.Paths.OldMMHookPath) != string.Empty)
             {
                 FileUtil.DeleteFileOrDirectory(Constants.Paths.OldMMHookPath);
+                FileUtil.DeleteFileOrDirectory($"{Constants.Paths.OldMMHookPath}.meta");
             }
 
-            if(AssetDatabase.AssetPathToGUID("Packages/riskofthunder-r2api_animations/plugins/R2API.Animations/AssetsTools.NET.dll") != string.Empty)
+            if (AssetDatabase.AssetPathToGUID(Constants.Paths.R2API_ANIMS_ASSET_TOOLS_PATH) != string.Empty)
             {
-                FileUtil.DeleteFileOrDirectory("Packages/riskofthunder-r2api_animations/plugins/R2API.Animations/AssetsTools.NET.dll");
+                FileUtil.DeleteFileOrDirectory(Constants.Paths.R2API_ANIMS_ASSET_TOOLS_PATH);
+                FileUtil.DeleteFileOrDirectory($"{Constants.Paths.R2API_ANIMS_ASSET_TOOLS_PATH}.meta");
             }
 
-            if(transientStore)
+            if (transientStore)
             {
                 DestroyImmediate(transientStore);
             }

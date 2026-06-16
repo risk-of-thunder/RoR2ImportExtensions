@@ -20,7 +20,7 @@ namespace RiskOfThunder.RoR2Importer
                 return true;
 
             ror2Source = CreateInstance<ThunderstoreSource>();
-            ror2Source.Url = "https://thunderstore.io";
+            ror2Source.Url = "https://thunderstore.io/c/riskofrain2";
             AssetDatabase.CreateAsset(ror2Source, RoR2ThunderstoreSourcePath);
             AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(ror2Source));
             PackageSource.LoadAllSources();
