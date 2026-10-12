@@ -1,3 +1,7 @@
+### 1.7.3
+
+* The ``InstallMultiplayerHLAPI`` and ``InstallR2EK`` import steps now run _before_ the game assemblies are imported
+
 ### 1.7.2
 
 * `R2APISubmoduleInstaller` no longer tries to retrieve packages info from Thunderstore on each domain reload.
